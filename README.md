@@ -9,7 +9,7 @@ No build step, no dependencies, works offline — small modules loaded in script
 [![All projects](https://img.shields.io/badge/All%20projects-drsamonline.github.io-60a5fa?style=for-the-badge)](https://drsamonline.github.io/)
 [![Play the game](https://img.shields.io/badge/▶_play_the_game_it_powers-8B5CF6?style=for-the-badge)](https://drsamonline.github.io/aethelgard-games/play/chronicles/)
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-PolyForm Noncommercial-green?style=flat-square)](LICENSE)
 [![No Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen?style=flat-square)](#run-it)
 [![No Build Step](https://img.shields.io/badge/build_step-none-informational?style=flat-square)](#run-it)
 [![Offline First](https://img.shields.io/badge/offline-first-success?style=flat-square)](#run-it)
@@ -101,7 +101,7 @@ rules so a broken mod can never take a running game down. See `docs/MODDING.md`.
 ## Licence
 
 **MIT.** The engine — all JavaScript, HTML, CSS, JSON and tooling in this
-repository — is free software under the [MIT Licence](LICENSE). Use it, fork
+repository — is free software under the [PolyForm Noncommercial Licence](LICENSE). Use it, fork
 it, ship it.
 
 The *Aethelgard* games' story, characters and artwork are a separate work,

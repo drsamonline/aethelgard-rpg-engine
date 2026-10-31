@@ -811,5 +811,21 @@ window.AETHELGARD_MODS.push({
   }
 })();
 </script>
+<style id="app-theme">
+  /* aethelgard-rpg-engine - its own palette, type and shape.
+     Keyed on data-theme so the in-app theme toggle still works; !important is
+     required because web-kit sets these as inline styles on <html>. */
+  html[data-theme="dark"]{--bg:#120a0a !important;--card:#1f0e0a !important;--ink:#fbf2ee !important;--mut:#a46e60 !important;--line:#32140a !important;--acc:#d37650 !important;}
+  html[data-theme="light"]{--bg:#fcf6f4 !important;--card:#ffffff !important;--ink:#211515 !important;--mut:#9e4d30 !important;--line:#f6e4dd !important;--acc:#9f350a !important;}
+  html,body{font-family:ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif !important;letter-spacing:.01em !important;
+    background-image:radial-gradient(820px 360px at 50% -170px,
+      color-mix(in srgb, var(--acc) 16%, transparent), transparent 72%) !important;
+    background-repeat:no-repeat !important;background-attachment:fixed !important}
+  button,input,textarea,select{font-family:ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif !important}
+  button,.btn{border-radius:4px !important}
+  input,textarea,select{border-radius:2px !important}
+  .card,[class*="card"]{border-radius:6px !important}
+  button:not(.ghost):not(.tab){background:var(--acc) !important}
+</style>
 </body>
 </html>

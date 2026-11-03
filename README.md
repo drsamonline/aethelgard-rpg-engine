@@ -27,6 +27,10 @@ and then build your own RPG on top.
 > a separate work, © Dr. Sohil Momin, all rights reserved — free to play, not
 > open source, and **not contained in this repository**. See [Licence](#licence).
 
+<!-- shot:start -->
+<img src="docs/assets/app-desktop.png" alt="The app on its main screen" width="100%">
+<!-- shot:end -->
+
 ## ▶️ See it in action
 
 This engine powers **Aethelgard: Chronicles of Fate**, a deep single-player RPG.
@@ -97,6 +101,23 @@ rules so a broken mod can never take a running game down. See `docs/MODDING.md`.
 | `docs/MODDING.md` | writing a mod |
 | `CONTRIBUTING.md` | how to send changes to the engine |
 | `CHANGELOG.md` | release history |
+
+## Support
+
+<img src="docs/assets/support-portrait.jpg" width="72" height="72" alt="Dr. Sohil Momin" align="left" style="border-radius:50%;margin-right:1rem">
+
+Free, offline, accountless — and staying that way. If it earned its keep:
+
+| | |
+|---|---|
+| UPI (India) | `drsohilboi@ybl` — payee Dr. Sohil Momin, open amount, or scan [the QR](docs/assets/upi-qr.svg) |
+| Ko-fi | [ko-fi.com/matneo](https://ko-fi.com/matneo) |
+| PayPal | [paypal.me/drsohilmomin](https://paypal.me/drsohilmomin?locale.x=en_GB&country.x=IN) |
+| My books | [Amazon author store](https://www.amazon.com/stores/author/B08ZT331LY/allbooks?ccs_id=aed72b9f-71d9-41dc-adee-e9368a317acc) |
+| More apps | [drsamonline.github.io](https://drsamonline.github.io/) |
+| Email | [sohilmomin2000@gmail.com](mailto:sohilmomin2000@gmail.com) |
+
+Nothing is gated behind it: no accounts, no tracking, no network requests.
 
 ## Licence
 

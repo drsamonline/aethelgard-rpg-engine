@@ -302,6 +302,11 @@ a[href*="/releases/latest/download/"] svg{width:16px;height:16px;flex:none;displ
   <div class="wrap hero-grid">
     <div>
       <p class="eyebrow">Vanilla JS · zero build · zero dependencies</p>
+<figure style="margin:26px 0 0;text-align:center">
+  <img src="assets/concept.svg" alt="A diagram of what this kit does"
+       style="width:100%;max-width:320px;height:auto">
+</figure>
+
       <h1 id="hero-title">The <span class="hl">Aethelgard Engine</span> — a browser RPG engine that ships as plain files.</h1>
       <p class="pitch">Aethelgard Engine is the engine behind <b>Aethelgard: Chronicles of Fate</b>, a deep single-player fantasy RPG that runs entirely in the browser. There is no bundler, no framework and no package to install — just <code class="mono">HTML</code>, <code class="mono">CSS</code> and ES5-ish JavaScript, loaded in script order, fully offline.</p>
 
@@ -805,6 +810,19 @@ window.AETHELGARD_MODS.push({
   .support-foot{margin:1.2rem 0 0;font-size:.8rem;color:var(--s-muted)}
   @media (prefers-reduced-motion:no-preference){.support-card{transition:border-color .15s ease}}
   .support-card:target,.support-card:focus-within{border-color:var(--s-accent)}
+
+  /* ---------- light theme ----------
+     Added so the page reads on paper. It overrides the page's own variables and
+     nothing else — no markup, no layout, no type. */
+  :root, html {
+    color-scheme: light;
+    --bg: #f7f6f2;
+    --panel: #ffffff;
+    --line: #e2ddd2;
+    --text: #14161a;
+    --muted: #5c6470;
+    --accent: #4170ab;
+  }
 </style>
 
 <section class="support" id="support" aria-labelledby="support-h" data-support>

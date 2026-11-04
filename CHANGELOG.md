@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased
+
+- **Fixed — CI was red, and the assertion was wrong, not the code.** `test8.js`
+  demanded `<script>` wiring in `index.html`, which this engine-only repository
+  does not ship (the page lives in `drsamonline/aethelgard-games`), so the suite
+  failed on every push and took the whole `syntax-and-tests` job with it. The test
+  now asks the question the repository can answer: a page means wiring, no page
+  means none.
+- **Fixed — the offline cache precached 16 files this repo does not ship.** `CORE`
+  named `index.html`, the whole `mods/` tree, `HOW_TO_PLAY.md`,
+  `AI_ART_PROMPTS.md` and `MOD_ART_PROMPTS.md` — none of which are here. One 404
+  makes `cache.addAll()` reject, and the worker's own `.catch()` swallowed it, so
+  the shell was never cached at all and nothing reported it. `CORE` is now exactly
+  what this repository ships (44 files), and `test9.js` pins it against the disk.
+- **Fixed — documentation went stale forever in an installed app.** The fetch
+  handler was cache-first for everything, and the cache only refreshes when
+  `CACHE` is bumped, so a reader kept the docs of the day they installed. `.md` is
+  now network-first with the cache as the offline fallback, and the fresh copy is
+  written back. `CACHE` bumped to `aethelgard-v23`.
+- **Added — `test9.js`**, a behavioural test for the service worker: it loads
+  `sw.js` into a shimmed worker global, fires fetch events at it and asserts what
+  `respondWith` received, plus the precache list against the disk. 14 assertions,
+  wired into CI beside `test8.js`.
+- **Docs** — the README no longer describes a page and a `mods/` folder that are
+  not in this repository, and `docs/ARCHITECTURE.md` describes the two suites that
+  actually run.
+
 ## 1.0.0 — 2026-10-25
 
 - **Licence: PolyForm Noncommercial 1.0.0.** Every repository now carries the canonical text

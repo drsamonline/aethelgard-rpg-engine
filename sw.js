@@ -1,13 +1,17 @@
 /* Aethelgard service worker — offline cache. Created by Dr. Sohil Momin.
 
-   Only the app shell is precached on install (61 files). Art packs, mod
+   Only the app shell is precached on install (44 files: the modules, the stylesheet,
+   the manifest and the icons). The list is exactly what
+   THIS repository ships: the page, the mods and the three extra .md files it used
+   to name live in drsamonline/aethelgard-games, and a precache list that names a
+   file the repo does not ship is not a small error — cache.addAll() rejects on the
+   first 404, so the catch below swallowed it and NOTHING was precached at all.
+   test9.js pins the list against the disk. Art packs, mod
    art, screenshots and posters are cached on demand the first time they are used,
    so a player who picks the Classic edition never downloads the illustrated art. */
-const CACHE = "aethelgard-v22";
+const CACHE = "aethelgard-v23";
 
 const CORE = [
-  "./",
-  "./index.html",
   "./style.css",
   "./manifest.json",
   "./js/data/achievements.js",
@@ -48,25 +52,10 @@ const CORE = [
   "./js/ui.js",
   "./js/wiki.js",
   "./js/world.js",
-  "./mods/index.js",
-  "./mods/mods.json",
-  "./mods/README.md",
-  "./mods/ai-art/mod.js",
-  "./mods/example-graphics/mod.js",
-  "./mods/overhaul-vector/mod.js",
-  "./mods/example-addon.js",
-  "./mods/example-class.js",
-  "./mods/example-mod.js",
-  "./mods/example-overhaul.js",
-  "./mods/story-expansion.js",
-  "./mods/villain-arc.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/maskable-512.png",
   "./README.md",
-  "./HOW_TO_PLAY.md",
-  "./AI_ART_PROMPTS.md",
-  "./MOD_ART_PROMPTS.md",
 ];
 
 self.addEventListener("install", e => {
@@ -81,8 +70,23 @@ self.addEventListener("message", e => {
   if (e.data === "skipWaiting") self.skipWaiting();
 });
 
+/* Documentation (.md) is precached so it can be read offline, but it must never
+   be served FROM the cache while the network is up: the docs change on every
+   deploy and the cache only refreshes when CACHE is bumped, so a cache-first
+   handler pins every installed reader to the docs of the day they installed.
+   Network first, cache as the offline fallback — and the fresh copy is written
+   back, so the offline read is the current one rather than the first one. */
+const DOCS = /\.md$/i;
+
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
+  if (DOCS.test(new URL(e.request.url).pathname)) {
+    e.respondWith(fetch(e.request).then(resp => {
+      if (resp && resp.ok) { const copy = resp.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {}); }
+      return resp;
+    }).catch(() => caches.match(e.request)));
+    return;
+  }
   e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request).then(resp => {
     if (resp && resp.ok) { const copy = resp.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {}); }
     return resp;

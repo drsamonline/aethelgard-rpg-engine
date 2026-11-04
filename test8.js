@@ -7,6 +7,7 @@
 */
 'use strict';
 const { execFileSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 let pass = 0, fail = 0;
@@ -29,7 +30,16 @@ const fns = fnm ? Number(fnm[1]) : -1;
 ok('static-audit.py finds the engine functions', fns > 100, 'functions=' + fns);
 
 const sm = out.match(/SCRIPT WIRING\s+(\d+)\s+tags/);
-ok('static-audit.py reads index.html script wiring', !!sm && Number(sm[1]) > 0, sm ? sm[1] + ' tags' : 'no tag count');
+const tags = sm ? Number(sm[1]) : -1;
+// This repository ships the ENGINE, not a page: index.html and the mods folder
+// live in drsamonline/aethelgard-games. The wiring assertion used to demand tags
+// unconditionally, so it failed here and took CI red with it. Ask the question the
+// repository can answer: a page means wiring, no page means none.
+if (fs.existsSync(path.join(__dirname, 'index.html'))) {
+  ok('static-audit.py reads index.html script wiring', tags > 0, tags + ' tags');
+} else {
+  ok('engine-only repo: no index.html, so the audit reports no wiring', tags === 0, 'tags=' + tags);
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -43,22 +43,30 @@ The visual novel runs on its own engine, [Saga](https://github.com/drsamonline/s
 
 ## Run it
 
-The engine is plain ES modules with no build step. Serve the folder over http
-(opening `index.html` by double-click will not work in most browsers):
+The engine is plain ES modules with no build step and no page of its own: this
+repository ships the **engine**, while the page, the mods folder and the two
+playable games live in
+**[drsamonline/aethelgard-games](https://github.com/drsamonline/aethelgard-games)**.
+To try the engine, serve this folder and import `js/boot.js` after the data files
+from a page of your own (ES modules need http, not `file://`):
 
 ```bash
 python3 -m http.server 8000
-# open http://localhost:8000
 ```
 
 No install, no dependencies. Any static server works (`npx serve`, nginx, GitHub
-Pages — anything).
+Pages — anything). The one test suite runs in plain Node:
+
+```bash
+node test8.js && node test9.js
+```
 
 ## Project layout
 
 ```
-index.html            the page
 style.css             the look
+manifest.json         the PWA manifest (the page it names lives in aethelgard-games)
+sw.js                 the offline cache; its precache list is pinned to this repo by test9.js
 js/core.js            state, saves, settings, attributes
 js/combat.js          turn-based combat and statuses
 js/world.js           the map, travel, dungeons and events
@@ -75,6 +83,7 @@ js/data/              THE SAMPLE WORLD  <- your game's data goes here
   ...                   companions, events, gems, music, reactions, wiki, i18n
 docs/                 the landing page + design notes
 tools/                build and simulation scripts
+test8.js, test9.js    the suites CI runs (static audit; service worker)
 ```
 
 Everything under `js/data/` is a **generic sample** — replace it with your own

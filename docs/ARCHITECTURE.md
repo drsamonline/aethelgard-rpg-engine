@@ -99,6 +99,12 @@ different content has to be loaded.
 
 ## Testing
 
-`test6.js`, `test7.js` and `test8.js` are plain Node scripts with a tiny
-assert helper. They load the game files into a stubbed DOM and assert on
-behaviour. No framework, no config.
+`test8.js` and `test9.js` are plain Node scripts with a tiny assert helper. No
+framework, no config, no browser.
+
+- `test8.js` runs `tools/static-audit.py` and pins its counts, so the documented
+  invocation cannot silently start reporting zeros.
+- `test9.js` loads `sw.js` into a shimmed service-worker global (`self`, `caches`,
+  `fetch` in a `vm` context), fires fetch events at it and asserts what
+  `respondWith` was handed: docs (`.md`) go network-first and fall back to the
+  cache offline, everything else stays cache-first, and the cache name is bumped.

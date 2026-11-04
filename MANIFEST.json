@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "locked": false,
+  "files": {
+    "README.md": {
+      "sha": "0ff400dfa8d508f170461825ad82506da6d5ea4d",
+      "producer": "bootstrap@2026-11-04",
+      "class": "generated",
+      "at": "2026-11-04T19:41:46Z"
+    },
+    "docs/index.html": {
+      "sha": "d155d79570e52ceedfb80153cd96929df3cab3f0",
+      "producer": "bootstrap@2026-11-04",
+      "class": "generated",
+      "at": "2026-11-04T19:41:46Z"
+    }
+  },
+  "updated": "2026-11-04T19:41:46Z"
+}

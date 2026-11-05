@@ -135,6 +135,10 @@
     background: var(--paper-2); box-shadow: var(--shadow);
   }
   figure.shot img { display: block; width: 100%; height: auto; }
+  .shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0 0; }
+  .shots figure { margin: 0; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--paper-2); }
+  .shots img { display: block; width: 100%; height: 100%; object-fit: cover; aspect-ratio: 16/10; }
+  @media (max-width: 720px) { .shots { grid-template-columns: 1fr; } }
   figure.shot figcaption {
     font-family: var(--mono); font-size: 11.5px; color: var(--muted);
     margin-top: 10px; letter-spacing: .02em;
@@ -265,9 +269,15 @@
     </div>
 
     <figure class="shot">
-      <div class="frame"><img src="assets/app-desktop.png" alt="Aethelgard: Chronicles of Fate running in a browser — the game world, status panel and action bar" width="1200" height="750" loading="lazy"></div>
+      <div class="frame"><img src="assets/shot-title.jpg" alt="Aethelgard: Chronicles of Fate — the title screen of the RPG this engine runs" width="1600" height="1000" loading="eager"></div>
       <figcaption>The engine at work — <a href="https://drsamonline.github.io/aethelgard-games/play/chronicles/">open the live demo</a>, or the <a href="https://github.com/drsamonline/aethelgard-rpg-engine/releases/latest">Windows .exe and Android .apk</a>.</figcaption>
     </figure>
+
+    <div class="shots">
+      <figure><img src="assets/shot-combat.jpg" alt="Combat in Aethelgard — the turn order, the action bar and the log" loading="lazy"></figure>
+      <figure><img src="assets/shot-atlas.jpg" alt="The world atlas — the map screen the engine builds from pure data" loading="lazy"></figure>
+      <figure><img src="assets/shot-diagnostics.jpg" alt="The diagnostics panel — the engine reporting its own state" loading="lazy"></figure>
+    </div>
   </header>
 
   <section id="inside">

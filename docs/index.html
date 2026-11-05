@@ -2,963 +2,399 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="color-scheme" content="dark">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aethelgard Engine — a zero-build, dependency-free browser RPG engine</title>
-<meta name="description" content="Aethelgard Engine is the vanilla-JavaScript engine behind Aethelgard: Chronicles of Fate — 50 JS files, no build step, no dependencies, fully offline. Data/logic split, one sprite function for all art, a procedural Web Audio soundtrack, a drop-in mod system and a deterministic HTML renderer.">
-<meta name="keywords" content="Aethelgard Engine, browser game engine, vanilla JavaScript engine, zero build, no dependencies, offline-first, moddable RPG engine, Web Audio soundtrack, procedural music, sprite packs, canvas-free rendering, Dr. Sohil Momin">
-<meta name="author" content="Dr. Sohil Momin">
-<meta name="robots" content="index, follow, max-image-preview:large">
-<meta name="theme-color" content="#14161a">
-<link rel="canonical" href="https://drsamonline.github.io/aethelgard-rpg-engine/">
-<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-<script>document.documentElement.className+=' js';</script>
-
-<!-- Open Graph -->
+<title>Aethelgard Engine — a browser RPG engine that ships as plain files</title>
+<meta name="description" content="The engine behind Aethelgard: Chronicles of Fate. A deep single-player fantasy RPG engine in plain HTML, CSS and ES5-ish JavaScript — no bundler, no framework, no build step, fully offline.">
+<meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f2e9" media="(prefers-color-scheme: light)">
+<meta property="og:title" content="Aethelgard Engine — a browser RPG engine that ships as plain files">
+<meta property="og:description" content="Zero build, zero dependencies. 50 plain JS files loaded in script order, readable end to end.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Aethelgard Engine">
-<meta property="og:title" content="Aethelgard Engine — a zero-build, dependency-free browser RPG engine">
-<meta property="og:description" content="The vanilla-JS engine behind Aethelgard: Chronicles of Fate. No build step, no dependencies, fully offline — data/logic split, one sprite function, procedural audio, a drop-in mod system and a deterministic HTML renderer.">
-<meta property="og:url" content="https://drsamonline.github.io/aethelgard-rpg-engine/">
-<meta property="og:image" content="https://socialify.git.ci/drsamonline/Aethelgard-Engine/image?name=1&amp;owner=1&amp;description=1&amp;language=1&amp;theme=Dark&amp;font=Inter">
-<meta property="og:image:alt" content="Aethelgard Engine repository card">
-
-<!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Aethelgard Engine — a zero-build, dependency-free browser RPG engine">
-<meta name="twitter:description" content="The vanilla-JS engine behind Aethelgard: Chronicles of Fate. 50 JS files, no build step, no dependencies, fully offline.">
-<meta name="twitter:image" content="https://socialify.git.ci/drsamonline/Aethelgard-Engine/image?name=1&amp;owner=1&amp;description=1&amp;language=1&amp;theme=Dark&amp;font=Inter">
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": "https://drsamonline.github.io/aethelgard-rpg-engine/#website",
-      "url": "https://drsamonline.github.io/aethelgard-rpg-engine/",
-      "name": "Aethelgard Engine",
-      "description": "A zero-build, dependency-free browser RPG engine written in vanilla JavaScript.",
-      "inLanguage": "en"
-    },
-    {
-      "@type": "SoftwareSourceCode",
-      "@id": "https://drsamonline.github.io/aethelgard-rpg-engine/#source",
-      "name": "Aethelgard Engine",
-      "description": "The vanilla-JavaScript engine behind Aethelgard: Chronicles of Fate — no build step, no dependencies, fully offline, with a drop-in mod system and a deterministic HTML renderer.",
-      "codeRepository": "https://github.com/drsamonline/aethelgard-rpg-engine",
-      "programmingLanguage": ["JavaScript", "HTML", "CSS"],
-      "runtimePlatform": "Web browser",
-      "license": "https://github.com/drsamonline/aethelgard-rpg-engine/blob/main/LICENSE",
-      "author": { "@type": "Person", "name": "Dr. Sohil Momin" },
-      "isPartOf": { "@id": "https://drsamonline.github.io/aethelgard-rpg-engine/#website" }
-    },
-    {
-      "@type": "SoftwareApplication",
-      "@id": "https://drsamonline.github.io/aethelgard-rpg-engine/#app",
-      "name": "Aethelgard: Chronicles of Fate",
-      "applicationCategory": "GameApplication",
-      "operatingSystem": "Any (web browser)",
-      "url": "https://drsamonline.github.io/aethelgard-games/play/chronicles/",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
-      "author": { "@type": "Person", "name": "Dr. Sohil Momin" }
-    }
-  ]
-}
-</script>
-
 <style>
-  :root{
-    --bg:#14161a;
-    --bg-2:#101216;
-    --panel:#1a1d23;
-    --panel-2:#20242b;
-    --line:#2b3039;
-    --line-2:#363c46;
-    --text:#c9d1d9;
-    --text-strong:#eef2f7;
-    --muted:#8b949e;
-    --accent:#60a5fa;
-    --accent-2:#3b82f6;
-    --accent-soft:rgba(96,165,250,.12);
-    --code-bg:#0f1115;
-    --ok:#57d38c;
-    --warn:#e3b341;
-    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
-    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    --maxw:1140px;
+  /* ---- palette --------------------------------------------------------
+     The app is slate and teal, so the page is too: pale parchment lit by
+     the same teal, and the app's own #0f1115 slate when the room is dark.
+     Named --ink/--paper/--muted/--accent because the contrast check reads
+     those four names; anything else and accessibility goes quiet.       */
+  :root {
+    --paper: #f6f2e9;
+    --paper-2: #efe9db;
+    --card: #fffdf8;
+    --ink: #1b1a17;
+    --muted: #5f6350;
+    --line: rgba(27,26,23,0.14);
+    --accent: #1f6f74;
+    --accent-2: #9a4a1f;
+    --shadow: 0 1px 0 rgba(27,26,23,0.05), 0 12px 30px -18px rgba(27,26,23,0.35);
+    --sans: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+    --rune: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M14 3v22M6 10l8-7 8 7' fill='none' stroke='%231f6f74' stroke-opacity='.13' stroke-width='1'/%3E%3C/svg%3E");
   }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{
-    margin:0;background:var(--bg);color:var(--text);
-    font-family:var(--sans);font-size:16px;line-height:1.62;
-    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0f1115; --paper-2: #14161a; --card: #171a20;
+      --ink: #e8e6e1; --muted: #9aa3ae; --line: rgba(232,230,225,0.13);
+      --accent: #57b6bd; --accent-2: #d78a5c;
+      --shadow: 0 1px 0 rgba(0,0,0,0.4), 0 18px 40px -24px rgba(0,0,0,0.9);
+      --rune: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M14 3v22M6 10l8-7 8 7' fill='none' stroke='%2357b6bd' stroke-opacity='.10' stroke-width='1'/%3E%3C/svg%3E");
+    }
   }
-  body::before{
-    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-    background:
-      linear-gradient(rgba(96,165,250,.035) 1px,transparent 1px) 0 0/100% 34px,
-      linear-gradient(90deg,rgba(96,165,250,.035) 1px,transparent 1px) 0 0/34px 100%;
-    mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 0%,transparent 72%);
-    -webkit-mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 0%,transparent 72%);
+  :root[data-theme="dark"] {
+    --paper: #0f1115; --paper-2: #14161a; --card: #171a20;
+    --ink: #e8e6e1; --muted: #9aa3ae; --line: rgba(232,230,225,0.13);
+    --accent: #57b6bd; --accent-2: #d78a5c;
+    --shadow: 0 1px 0 rgba(0,0,0,0.4), 0 18px 40px -24px rgba(0,0,0,0.9);
+    --rune: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M14 3v22M6 10l8-7 8 7' fill='none' stroke='%2357b6bd' stroke-opacity='.10' stroke-width='1'/%3E%3C/svg%3E");
   }
-  a{color:var(--accent);text-decoration:none}
-  a:hover{text-decoration:underline}
-  h1,h2,h3,h4{color:var(--text-strong);line-height:1.2;margin:0}
-  code,kbd,pre,.mono{font-family:var(--mono)}
-  img{max-width:100%;display:block}
-  ::selection{background:var(--accent-soft);color:#fff}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px;position:relative;z-index:1}
-  .skip{position:absolute;left:-9999px}
-  .skip:focus{left:12px;top:12px;z-index:100;background:var(--panel);color:var(--accent);padding:10px 14px;border:1px solid var(--accent)}
-
-  /* ---------- nav ---------- */
-  header.nav{
-    position:sticky;top:0;z-index:50;
-    background:rgba(20,22,26,.86);backdrop-filter:blur(9px);
-    border-bottom:1px solid var(--line);
+  :root[data-theme="light"] {
+    --paper: #f6f2e9; --paper-2: #efe9db; --card: #fffdf8;
+    --ink: #1b1a17; --muted: #5f6350; --line: rgba(27,26,23,0.14);
+    --accent: #1f6f74; --accent-2: #9a4a1f;
+    --shadow: 0 1px 0 rgba(27,26,23,0.05), 0 12px 30px -18px rgba(27,26,23,0.35);
+    --rune: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M14 3v22M6 10l8-7 8 7' fill='none' stroke='%231f6f74' stroke-opacity='.13' stroke-width='1'/%3E%3C/svg%3E");
   }
-  .nav-in{display:flex;align-items:center;gap:18px;height:58px}
-  .brand{display:flex;align-items:center;gap:11px;color:var(--text-strong);font-weight:700;letter-spacing:.02em}
-  .brand:hover{text-decoration:none}
-  .brand svg{display:block}
-  .brand .sub{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:400;letter-spacing:.06em;text-transform:uppercase}
-  nav.links{margin-left:auto;display:flex;align-items:center;gap:4px}
-  nav.links a{
-    color:var(--muted);font-size:13.5px;padding:8px 11px;position:relative;font-family:var(--mono);
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); font-size: 17px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    background-image: var(--rune);
   }
-  nav.links a:hover{color:var(--text-strong);text-decoration:none}
-  nav.links a::after{content:"";position:absolute;left:11px;right:11px;bottom:3px;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .22s ease}
-  nav.links a:hover::after,nav.links a.active::after{transform:scaleX(1)}
-  nav.links a.active{color:var(--text-strong)}
-  .nav-cta{margin-left:10px;border:1px solid var(--accent);color:var(--accent);padding:7px 13px;font-family:var(--mono);font-size:12.5px}
-  .nav-cta:hover{background:var(--accent-soft);text-decoration:none}
-  @media (max-width:860px){ nav.links a:not(.nav-cta){display:none} .brand .sub{display:none} }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 26px; }
 
-  /* ---------- buttons / badges ---------- */
-  .btn{display:inline-flex;align-items:center;gap:9px;padding:12px 18px;border:1px solid var(--line-2);
-    color:var(--text-strong);font-family:var(--mono);font-size:13.5px;background:var(--panel);
-    transition:border-color .18s ease,background .18s ease,transform .18s ease}
-  .btn:hover{text-decoration:none;border-color:var(--accent);background:var(--panel-2)}
-  .btn svg{width:16px;height:16px}
-a[href*="/releases/latest/download/"] svg{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-2px}
-  .btn.primary{background:var(--accent-soft);border-color:var(--accent);color:#dbeafe}
-  .btn.primary:hover{background:rgba(96,165,250,.2)}
-  .badges{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .badges img{height:20px;width:auto}
-  .chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11.5px;
-    color:var(--muted);border:1px solid var(--line);padding:4px 9px;background:var(--bg-2);letter-spacing:.03em}
-  .chip .dot{width:6px;height:6px;background:var(--accent);display:inline-block}
-  .chip.ok .dot{background:var(--ok)}
-
-  /* ---------- panels ---------- */
-  .panel{background:var(--panel);border:1px solid var(--line)}
-  .panel-bar{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--line);
-    background:var(--bg-2);font-family:var(--mono);font-size:12px;color:var(--muted)}
-  .panel-bar .fname{color:var(--text)}
-  .panel-bar .sq{width:9px;height:9px;border:1px solid var(--line-2);display:inline-block}
-  .panel-bar .spacer{margin-left:auto}
-  section{padding:74px 0;border-bottom:1px solid var(--line);position:relative}
-  .eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.16em;text-transform:uppercase;margin:0 0 12px}
-  h2.sec{font-size:clamp(1.5rem,3.4vw,2.05rem);letter-spacing:-.01em;margin-bottom:14px}
-  .lead{color:var(--muted);max-width:70ch;font-size:1.02rem}
-  .sec-head{max-width:78ch;margin-bottom:34px}
-
-  /* ---------- hero ---------- */
-  .hero{padding:84px 0 78px;border-bottom:1px solid var(--line)}
-  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center}
-  @media (max-width:920px){.hero-grid{grid-template-columns:1fr;gap:32px}}
-  .hero h1{font-size:clamp(2rem,5vw,3.05rem);letter-spacing:-.022em;margin:14px 0 16px}
-  .hero h1 .hl{color:var(--accent)}
-  .hero p.pitch{color:var(--text);font-size:1.09rem;max-width:56ch}
-  .hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin:26px 0 20px}
-  .term{font-family:var(--mono);font-size:12.5px;line-height:1.75;padding:15px 16px;overflow:auto;color:#a8b3c0}
-  .term .c{color:var(--muted)}
-  .term .p{color:var(--accent)}
-  .term .k{color:var(--text-strong)}
-  .term .g{color:var(--ok)}
-  .tree{font-family:var(--mono);font-size:12.5px;line-height:1.85;padding:14px 16px;color:#9aa6b3;overflow:auto}
-  .tree b{color:var(--text-strong);font-weight:600}
-  .tree .dir{color:var(--accent)}
-  .tree .cm{color:var(--muted)}
-
-  /* ---------- cards ---------- */
-  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  @media (max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}}
-  @media (max-width:600px){.cards{grid-template-columns:1fr}}
-  .card{background:var(--panel);border:1px solid var(--line);padding:22px 20px;transition:border-color .18s ease,transform .18s ease}
-  .card:hover{border-color:var(--line-2);transform:translateY(-3px)}
-  .card .ico{width:34px;height:34px;color:var(--accent);margin-bottom:14px}
-  .card h3{font-size:1.02rem;margin-bottom:8px}
-  .card p{margin:0;color:var(--muted);font-size:.93rem}
-  .card .api{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:11.5px;color:var(--accent);background:var(--bg-2);border:1px solid var(--line);padding:3px 7px}
-
-  /* ---------- code / quickstart ---------- */
-  .split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media (max-width:860px){.split{grid-template-columns:1fr}}
-  pre.code{margin:0;background:var(--code-bg);border:1px solid var(--line);padding:15px 16px;overflow:auto;
-    font-size:12.6px;line-height:1.7;color:#c3ccd6}
-  pre.code .cm{color:var(--muted)}
-  pre.code .kw{color:var(--accent)}
-  pre.code .st{color:var(--ok)}
-  pre.code .fn{color:#e3b341}
-  .code-label{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:0 0 8px;letter-spacing:.05em}
-  ol.steps{counter-reset:s;list-style:none;padding:0;margin:0}
-  ol.steps li{position:relative;padding:0 0 20px 46px;border-left:1px solid var(--line);margin-left:13px}
-  ol.steps li:last-child{border-left-color:transparent;padding-bottom:0}
-  ol.steps li::before{counter-increment:s;content:counter(s,decimal-leading-zero);position:absolute;left:-14px;top:0;
-    width:28px;height:28px;display:grid;place-items:center;background:var(--bg-2);border:1px solid var(--accent);
-    color:var(--accent);font-family:var(--mono);font-size:11.5px}
-  ol.steps h3{font-size:.98rem;margin-bottom:4px}
-  ol.steps p{margin:0;color:var(--muted);font-size:.92rem}
-
-  /* ---------- subsystems ---------- */
-  .subs{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-  @media (max-width:820px){.subs{grid-template-columns:1fr}}
-  .sub .diagram{padding:14px;background:var(--bg-2);border-bottom:1px solid var(--line)}
-  .sub .diagram svg{width:100%;height:auto;display:block}
-  .sub .body{padding:16px 18px}
-  .sub h3{font-size:.98rem;margin-bottom:6px;font-family:var(--mono)}
-  .sub p{margin:0;color:var(--muted);font-size:.9rem}
-  .sub .file{font-family:var(--mono);font-size:11.5px;color:var(--accent)}
-
-  /* ---------- demo shots ---------- */
-  .shots{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-  @media (max-width:900px){.shots{grid-template-columns:repeat(2,1fr)}}
-  .shot{border:1px solid var(--line);background:var(--panel);overflow:hidden;position:relative}
-  .shot img{width:100%;height:150px;object-fit:cover;object-position:top center;filter:saturate(.92)}
-  .shot .cap{font-family:var(--mono);font-size:11px;color:var(--muted);padding:8px 10px;border-top:1px solid var(--line);background:var(--bg-2)}
-
-  /* ---------- faq ---------- */
-  .faq{display:grid;gap:10px;max-width:900px}
-  details.q{border:1px solid var(--line);background:var(--panel)}
-  details.q[open]{border-color:var(--line-2)}
-  details.q summary{cursor:pointer;padding:15px 18px;font-weight:600;color:var(--text-strong);list-style:none;
-    display:flex;align-items:center;gap:12px;font-size:.98rem}
-  details.q summary::-webkit-details-marker{display:none}
-  details.q summary::before{content:"+";font-family:var(--mono);color:var(--accent);font-size:1.05rem;width:14px;text-align:center}
-  details.q[open] summary::before{content:"–"}
-  details.q .a{padding:0 18px 16px 44px;color:var(--muted);font-size:.93rem}
-  details.q .a code{color:var(--accent);background:var(--bg-2);padding:1px 5px;font-size:12px}
-
-  /* ---------- get started / footer ---------- */
-  .start-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:6px}
-  @media (max-width:820px){.start-grid{grid-template-columns:1fr}}
-  .start-card{border:1px solid var(--line);background:var(--panel);padding:20px}
-  .start-card h3{font-size:.95rem;font-family:var(--mono);margin-bottom:10px;color:var(--accent)}
-  .start-card ul{margin:0;padding-left:18px;color:var(--muted);font-size:.9rem}
-  .start-card li{margin-bottom:6px}
-  footer{padding:40px 0 54px;background:var(--bg-2)}
-  .foot{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
-  .foot .built{color:var(--muted);font-size:.9rem}
-  .foot .built b{color:var(--text-strong)}
-  .foot nav{display:flex;flex-wrap:wrap;gap:16px;font-family:var(--mono);font-size:12.5px}
-  .foot nav a{color:var(--muted)}
-  .foot nav a:hover{color:var(--accent)}
-
-  /* ---------- reveal animation ---------- */
-  .js .reveal{opacity:0;transform:translateY(14px);transition:opacity .55s ease,transform .55s ease}
-  .js .reveal.in{opacity:1;transform:none}
-  .reveal.d1{transition-delay:.06s}.reveal.d2{transition-delay:.12s}.reveal.d3{transition-delay:.18s}
-  @media (prefers-reduced-motion:reduce){
-    html{scroll-behavior:auto}
-    .js .reveal{opacity:1;transform:none;transition:none}
-    .card,.btn{transition:none}
+  /* ---- top bar ---- */
+  .bar {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
   }
+  .bar .wrap { display: flex; align-items: center; gap: 14px; height: 62px; }
+  .mark { width: 30px; height: 30px; flex: none; }
+  .brand { font-weight: 600; letter-spacing: .01em; }
+  .brand span { color: var(--muted); font-weight: 400; font-family: var(--mono); font-size: 12px; margin-left: 8px; letter-spacing: .06em; text-transform: uppercase; }
+  .bar nav { margin-left: auto; display: flex; gap: 20px; font-size: 14.5px; }
+  .bar nav a { color: var(--muted); text-decoration: none; }
+  .bar nav a:hover { color: var(--ink); }
+  @media (max-width: 760px) { .bar nav { display: none; } }
+
+  .toggle {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 12px 5px 9px; cursor: pointer; color: var(--muted);
+    font: inherit; font-size: 13px; line-height: 1;
+  }
+  .toggle:hover { color: var(--ink); border-color: var(--accent); }
+  .toggle svg { width: 15px; height: 15px; }
+  .bar nav + .toggle { margin-left: 0; }
+
+  /* ---- hero ---- */
+  .hero { padding: 74px 0 40px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
+  h1 {
+    font-size: clamp(34px, 5.6vw, 62px); line-height: 1.04; margin: 18px 0 0;
+    letter-spacing: -.022em; font-weight: 600; max-width: 20ch;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .lead { font-size: 19px; color: var(--muted); max-width: 60ch; margin: 20px 0 0; }
+  .lead b { color: var(--ink); font-weight: 600; }
+  .cta { display: flex; flex-wrap: wrap; gap: 11px; margin: 30px 0 0; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px;
+    border-radius: 3px; text-decoration: none; font-size: 15.5px; font-weight: 500;
+    border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+  }
+  .btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn.ghost:hover { border-color: var(--accent); color: var(--accent); background: transparent; }
+
+  /* ---- the five facts ---- */
+  .facts {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    margin: 44px 0 0;
+  }
+  .facts div { padding: 16px 4px; border-left: 1px solid var(--line); padding-left: 16px; }
+  .facts div:first-child { border-left: 0; padding-left: 0; }
+  .facts b { display: block; font-size: 21px; font-weight: 600; letter-spacing: -.01em; }
+  .facts span { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  @media (max-width: 720px) { .facts { grid-template-columns: repeat(2, 1fr); } .facts div { border-left: 0; padding-left: 0; } }
+
+  /* ---- screenshot ---- */
+  figure.shot { margin: 46px 0 0; }
+  figure.shot .frame {
+    border: 1px solid var(--line); border-radius: 4px; overflow: hidden;
+    background: var(--paper-2); box-shadow: var(--shadow);
+  }
+  figure.shot img { display: block; width: 100%; height: auto; }
+  figure.shot figcaption {
+    font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+    margin-top: 10px; letter-spacing: .02em;
+  }
+
+  /* ---- sections ---- */
+  section { padding: 62px 0 0; }
+  h2 {
+    font-size: 12px; font-family: var(--mono); letter-spacing: .16em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 24px; font-weight: 500;
+    display: flex; align-items: center; gap: 12px;
+  }
+  h2::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  h3 { font-size: 19px; margin: 0 0 6px; letter-spacing: -.01em; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .grid > div { background: var(--card); padding: 22px 22px 24px; }
+  .grid p { margin: 0; color: var(--muted); font-size: 15.5px; }
+  .grid code, p code, li code {
+    font-family: var(--mono); font-size: .88em; background: var(--paper-2);
+    padding: 1px 5px; border-radius: 2px; border: 1px solid var(--line);
+  }
+
+  /* load order strip */
+  .order { display: flex; flex-wrap: wrap; gap: 0; align-items: stretch; margin: 0; padding: 0; list-style: none; border: 1px solid var(--line); }
+  .order li {
+    flex: 1 1 120px; padding: 14px 12px; border-left: 1px solid var(--line);
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted);
+  }
+  .order li:first-child { border-left: 0; }
+  .order b { display: block; color: var(--ink); font-weight: 500; font-size: 13.5px; margin-bottom: 2px; }
+  .order li:nth-child(odd) { background: var(--card); }
+
+  .refuses { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 40px; }
+  .refuses li { break-inside: avoid; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 15.5px; }
+  .refuses li b { color: var(--ink); font-weight: 500; }
+  .refuses li::before { content: '—'; color: var(--accent); margin-right: 10px; font-family: var(--mono); }
+  @media (max-width: 640px) { .refuses { columns: 1; } }
+
+  pre {
+    background: var(--paper-2); border: 1px solid var(--line); border-left: 2px solid var(--accent);
+    padding: 16px 18px; overflow-x: auto; margin: 0;
+    font-family: var(--mono); font-size: 13px; line-height: 1.7; color: var(--ink);
+  }
+  pre .c { color: var(--muted); }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 26px 0 0; }
+  .badges img { height: 22px; width: auto; display: block; }
+
+  /* ---- support ---- */
+  .support { border-top: 1px solid var(--line); margin-top: 72px; padding: 40px 0 0; }
+  .support-in { display: grid; grid-template-columns: 96px 1fr; gap: 22px; align-items: start; }
+  .support-in img.portrait { width: 96px; height: 96px; border-radius: 3px; border: 1px solid var(--line); display: block; }
+  .support h3 { margin-bottom: 8px; }
+  .support p { margin: 0 0 14px; color: var(--muted); font-size: 15.5px; max-width: 62ch; }
+  .handles { display: flex; flex-wrap: wrap; gap: 8px; }
+  .handles a, .handles span.vpa {
+    font-family: var(--mono); font-size: 12.5px; text-decoration: none;
+    border: 1px solid var(--line); border-radius: 3px; padding: 7px 11px; color: var(--ink);
+    background: var(--card);
+  }
+  .handles a:hover { border-color: var(--accent); color: var(--accent); }
+  .qr { width: 96px; height: 96px; border: 1px solid var(--line); background: #fff; border-radius: 3px; }
+  @media (max-width: 640px) { .support-in { grid-template-columns: 1fr; } }
+
+  footer { border-top: 1px solid var(--line); margin-top: 46px; padding: 22px 0 60px; font-size: 13.5px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  footer a { color: var(--muted); }
+  footer a:hover { color: var(--accent); }
+  .stamp { margin-left: auto; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; }
 </style>
-<style id="__overflow_fix__"> /* horizontal-overflow fixes */ .hero-grid>*,.split>*,.subs>*,.cards>*,.start-grid>*{min-width:0} .lead,.sec-head p,.card p,.panel-bar{overflow-wrap:anywhere} </style>
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
 
-<header class="nav">
-  <div class="wrap nav-in">
-    <a class="brand" href="#top" aria-label="Aethelgard Engine home">
-      <svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true">
-        <rect width="48" height="48" fill="#14161a"/><rect x="3" y="3" width="42" height="42" fill="none" stroke="#2b3039"/>
-        <path d="M24 8 39 42H9Z" fill="none" stroke="#60a5fa" stroke-width="2.4"/>
-        <path d="M16.5 30.5h15" stroke="#60a5fa" stroke-width="2.4"/><circle cx="24" cy="24" r="2.4" fill="#60a5fa"/>
+<div class="bar">
+  <div class="wrap">
+    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+      <!-- the mark: a rune-cut A inside a lozenge, drawn for this engine alone -->
+      <path d="M16 2.5 29.5 16 16 29.5 2.5 16Z" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+      <path d="M16 8.5v15M11 19.5 16 8.5l5 11M12.9 16.2h6.2" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <span class="brand">Aethelgard<span>engine</span></span>
+    <nav>
+      <a href="#inside">What's inside</a>
+      <a href="#order">How it loads</a>
+      <a href="#refuses">What it refuses</a>
+      <a href="#run">Run it</a>
+    </nav>
+    <button class="toggle" id="theme" type="button" aria-label="Switch colour theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+        <circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.6M12 19v2.6M2.4 12H5M19 12h2.6M5.2 5.2l1.8 1.8M17 17l1.8 1.8M18.8 5.2 17 7M7 17l-1.8 1.8"/>
       </svg>
-      <span>Aethelgard<span class="sub">&nbsp;engine</span></span>
-    </a>
-    <nav class="links" aria-label="Sections">
-      <a href="#features">Features</a>
-      <a href="#architecture">Architecture</a>
-      <a href="#subsystems">Subsystems</a>
-      <a href="#demo">Demo</a>
-      <a href="#faq">FAQ</a>
-      <a href="https://drsamonline.github.io/">All projects</a>
-      <a class="nav-cta" href="https://github.com/drsamonline/aethelgard-rpg-engine">GitHub</a>
-    </nav>
+      <span id="theme-label">Light</span>
+    </button>
   </div>
-</header>
-
-<main id="main">
-<span id="top"></span>
-
-<!-- ================= HERO ================= -->
-<section class="hero" aria-labelledby="hero-title">
-  <div class="wrap hero-grid">
-    <div>
-      <p class="eyebrow">Vanilla JS · zero build · zero dependencies</p>
-<figure style="margin:26px 0 0;text-align:center">
-  <img src="assets/concept.svg" alt="A diagram of what this kit does"
-       style="width:100%;max-width:320px;height:auto">
-</figure>
-
-      <h1 id="hero-title">The <span class="hl">Aethelgard Engine</span> — a browser RPG engine that ships as plain files.</h1>
-      <p class="pitch">Aethelgard Engine is the engine behind <b>Aethelgard: Chronicles of Fate</b>, a deep single-player fantasy RPG that runs entirely in the browser. There is no bundler, no framework and no package to install — just <code class="mono">HTML</code>, <code class="mono">CSS</code> and ES5-ish JavaScript, loaded in script order, fully offline.</p>
-
-      <div class="cta">
-        <a class="btn primary" href="#architecture">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 6 3 12l5 6M16 6l5 6-5 6M13 4l-2 16"/></svg>
-          Read the architecture
-        </a>
-        <a class="btn" href="play/">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
-          Play the demo
-        </a>
-        <a class="btn" href="https://github.com/drsamonline/aethelgard-rpg-engine">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
-          Source
-        </a>
-              <a class="btn primary" href="https://github.com/drsamonline/aethelgard-rpg-engine/releases/latest/download/Aethelgard-Engine-portable.exe"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.1 10.5 4.1v6.9H3V5.1Zm8.5-1.16L21 2.5v8.5h-9.5V3.94ZM3 12h7.5v6.9L3 17.9V12Zm8.5 0H21v8.5l-9.5-1.44V12Z"/></svg>
-          Download for Windows (.exe)
-        </a>
-        <a class="btn" href="https://github.com/drsamonline/aethelgard-rpg-engine/releases/latest/download/Aethelgard-Engine.apk"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.66-.38l-1.87 3.23a11.4 11.4 0 0 0-9.82 0L5.22 5.92a.38.38 0 0 0-.66.38l1.84 3.18A10.8 10.8 0 0 0 1.5 18h21a10.8 10.8 0 0 0-4.9-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
-          Download for Android (.apk)
-        </a>
 </div>
-      <p class="dl-note" style="margin:.85rem 0 0;font-size:.85rem;line-height:1.55;opacity:.75;max-width:64ch">Free &amp; fully offline &mdash; nothing to install. The Android .apk is sideload-only (allow installs from unknown sources).</p>
 
+<div class="wrap">
 
-      <div class="badges" aria-label="Repository badges">
-        <img src="https://img.shields.io/badge/license-MIT-60a5fa?style=flat-square" alt="License" loading="lazy" onerror="this.style.display='none'">
-        <img src="https://img.shields.io/github/stars/drsamonline/Aethelgard-Engine?style=flat-square&amp;color=60a5fa" alt="Stars" loading="lazy" onerror="this.style.display='none'">
-        <img src="https://img.shields.io/github/last-commit/drsamonline/Aethelgard-Engine?style=flat-square&amp;color=60a5fa" alt="Last commit" loading="lazy" onerror="this.style.display='none'">
-        <img src="https://img.shields.io/github/languages/code-size/drsamonline/Aethelgard-Engine?style=flat-square&amp;color=60a5fa" alt="Code size" loading="lazy" onerror="this.style.display='none'">
-      </div>
-      <div class="badges" style="margin-top:10px" aria-label="Engine properties">
-        <span class="chip"><span class="dot"></span>no build step</span>
-        <span class="chip"><span class="dot"></span>0 dependencies</span>
-        <span class="chip"><span class="dot"></span>MIT code</span>
-        <span class="chip"><span class="dot"></span>PWA / offline</span>
-        <span class="chip ok"><span class="dot"></span>50 JS files</span>
-      </div>
+  <header class="hero">
+    <p class="eyebrow">Vanilla JS · zero build · zero dependencies</p>
+    <h1>The engine that ships as <em>plain files</em>.</h1>
+    <p class="lead">Aethelgard Engine is what runs <b>Aethelgard: Chronicles of Fate</b> — a deep
+    single-player fantasy RPG in the browser. There is no bundler, no framework and no package to
+    install: just HTML, CSS and ES5-ish JavaScript, loaded in script order, fully offline.</p>
+
+    <div class="cta">
+      <a class="btn" href="https://drsamonline.github.io/aethelgard-games/play/chronicles/">▶ Play the demo</a>
+      <a class="btn ghost" href="#inside">Read the architecture</a>
+      <a class="btn ghost" href="https://github.com/drsamonline/aethelgard-rpg-engine">Source</a>
     </div>
 
-    <div class="panel reveal" role="img" aria-label="Terminal showing how to run the engine locally">
-      <div class="panel-bar"><span class="sq"></span><span class="fname">aethelgard-engine</span><span class="spacer"></span><span>bash</span></div>
-      <div class="term">
-<div><span class="c"># nothing to install — the engine is plain files</span></div>
-<div><span class="p">$</span> <span class="k">git clone</span> https://github.com/drsamonline/aethelgard-rpg-engine.git</div>
-<div><span class="p">$</span> <span class="k">cd</span> Aethelgard-Engine</div>
-<div><span class="p">$</span> <span class="k">python3</span> -m http.server 8080</div>
-<div><span class="c"># open http://localhost:8080 — that's the whole build</span></div>
-<div>&nbsp;</div>
-<div><span class="c"># every module is checked and exercised with plain Node</span></div>
-<div><span class="p">$</span> <span class="k">node</span> --check js/core.js</div>
-<div><span class="p">$</span> <span class="k">node</span> test6.js &amp;&amp; <span class="k">node</span> test7.js &amp;&amp; <span class="k">node</span> test8.js</div>
-<div><span class="p">$</span> <span class="k">node</span> tools/verify.js</div>
-<div><span class="g">PASS</span> — tabs, actions, combat, save, both campaigns</div>
-<div><span class="p">$</span> <span class="k">python3</span> tools/static-audit.py .</div>
-<div><span class="g">447 functions · 0 duplicate definitions · 0 parse failures</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= FEATURES ================= -->
-<section id="features" aria-labelledby="features-h">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">What's inside</p>
-      <h2 class="sec" id="features-h">Engine decisions, not accidents</h2>
-      <p class="lead">Every design choice here is aimed at the same goal: a game engine small enough to read end to end, and open enough that a mod can reshape it without touching the core.</p>
+    <div class="badges">
+      <a href="https://github.com/drsamonline/aethelgard-rpg-engine/actions/workflows/build-apps.yml"><img src="assets/badge-build.svg" alt="build: green"></a>
+      <a href="https://github.com/drsamonline/aethelgard-rpg-engine/actions/workflows/test.yml"><img src="assets/badge-tests.svg" alt="tests: passing"></a>
+      <a href="LICENSE"><img src="assets/badge-licence.svg" alt="licence: MIT"></a>
+      <img src="assets/badge-offline.svg" alt="offline: no network">
+      <img src="assets/badge-deps.svg" alt="dependencies: none">
+      <a href="https://drsamonline.github.io/aethelgard-rpg-engine/"><img src="assets/badge-live.svg" alt="live: online"></a>
     </div>
 
-    <div class="cards">
-      <article class="card reveal">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4M3 17l9 4 9-4"/></svg>
+    <div class="facts">
+      <div><b>0</b><span>dependencies</span></div>
+      <div><b>none</b><span>build step</span></div>
+      <div><b>50</b><span>plain JS files</span></div>
+      <div><b>447</b><span>functions</span></div>
+      <div><b>MIT</b><span>code licence</span></div>
+    </div>
+
+    <figure class="shot">
+      <div class="frame"><img src="assets/app-desktop.png" alt="Aethelgard: Chronicles of Fate running in a browser — the game world, status panel and action bar" width="1200" height="750" loading="lazy"></div>
+      <figcaption>The engine at work — <a href="https://drsamonline.github.io/aethelgard-games/play/chronicles/">open the live demo</a>, or the <a href="https://github.com/drsamonline/aethelgard-rpg-engine/releases/latest">Windows .exe and Android .apk</a>.</figcaption>
+    </figure>
+  </header>
+
+  <section id="inside">
+    <h2>What's inside — engine decisions, not accidents</h2>
+    <div class="grid">
+      <div>
         <h3>Zero build, zero dependencies</h3>
-        <p>ES5-ish IIFEs loaded in <code class="mono">script</code> order. Nothing is imported, nothing is bundled, nothing is transpiled. Open the folder over any static host and it runs.</p>
-        <span class="api">no bundler · no framework</span>
-      </article>
-
-      <article class="card reveal d1">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>
+        <p>ES5-ish IIFEs loaded in <code>script</code> order. Nothing is imported, bundled or
+        transpiled. Open the folder over any static host and it runs.</p>
+      </div>
+      <div>
         <h3>Data and logic kept apart</h3>
-        <p>Everything under <code class="mono">js/data/</code> is pure data with no side effects. That is exactly what makes mods simple: a mod supplies the same shapes and they merge.</p>
-        <span class="api">js/data/ · Object.assign(Game, …)</span>
-      </article>
-
-      <article class="card reveal d2">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
-        <h3>One function draws all the art</h3>
-        <p>The whole game paints through <code class="mono">Game.sprite(key, fallback)</code>. An art overhaul is a graphics pack that registers images for sprite keys — anything it doesn't cover keeps its emoji.</p>
-        <span class="api">Game.sprite(key, fallback)</span>
-      </article>
-
-      <article class="card reveal">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 12h3l2-7 4 14 2-9 2 4h5"/></svg>
-        <h3>A procedural soundtrack</h3>
-        <p>No audio files ship at all. <code class="mono">js/music.js</code> improvises every mood live from a scale through the Web Audio API, sitting under the sound effects.</p>
-        <span class="api">Web Audio · no audio files</span>
-      </article>
-
-      <article class="card reveal d1">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 3h4a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2v2a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h2V5a2 2 0 0 1 2-2z"/></svg>
-        <h3>A drop-in mod system</h3>
-        <p>Drop a <code class="mono">.js</code> file in <code class="mono">mods/</code> and the engine finds it at boot. Mods declare their impact, are compatibility-checked, and can be switched off with safe mode.</p>
-        <span class="api">mods/*.js · additive | story | overhaul</span>
-      </article>
-
-      <article class="card reveal d2">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 5 3 12l5 7M16 5l5 7-5 7"/><path d="M14 4 10 20"/></svg>
-        <h3>A deterministic HTML renderer</h3>
-        <p>No virtual DOM. Each view returns an HTML string that <code class="mono">render()</code> assigns to <code class="mono">#view-container</code> — so overriding a view is one function. Cheap number updates are split from panel rebuilds.</p>
-        <span class="api">render() → #view-container</span>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ================= ARCHITECTURE / QUICKSTART ================= -->
-<section id="architecture" aria-labelledby="arch-h">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">How it works</p>
-      <h2 class="sec" id="arch-h">One global, loaded in order</h2>
-      <p class="lead">Every file is an IIFE that hangs its public functions off a single global, <code class="mono">window.Game</code> (aliased <code class="mono">G</code>). Load order is the order of the <code class="mono">&lt;script&gt;</code> tags in <code class="mono">index.html</code>. That is the whole dependency system — and it is why a mod can add a chapter, a class or a language without the core changing.</p>
-    </div>
-
-    <div class="split" style="margin-bottom:22px">
-      <div class="panel">
-        <div class="panel-bar"><span class="sq"></span><span class="fname">tree</span><span class="spacer"></span><span>repo layout</span></div>
-        <div class="tree">
-<div><span class="dir">index.html</span>   <span class="cm">markup + script order</span></div>
-<div><span class="dir">style.css</span>    <span class="cm">all styling, CSS custom properties</span></div>
-<div><span class="dir">manifest.json</span> <span class="cm">PWA manifest</span></div>
-<div><span class="dir">sw.js</span>        <span class="cm">offline cache</span></div>
-<div><span class="dir">js/data/</span>     <b>pure data</b> <span class="cm">— no logic, no side effects</span></div>
-<div><span class="dir">js/*.js</span>      <b>logic</b> <span class="cm">— one concern per file</span></div>
-<div><span class="dir">js/views/</span>    <b>one module per tab</b></div>
-<div><span class="dir">js/boot.js</span>   <span class="cm">startup sequence (runs last)</span></div>
-<div><span class="dir">mods/</span>        <span class="cm">drop-in content, auto-discovered</span></div>
-<div><span class="dir">tools/</span>       <span class="cm">audit, verifier, simulations</span></div>
-        </div>
+        <p>Everything under <code>js/data/</code> is pure data with no side effects — which is exactly
+        what makes a mod simple: it supplies the same shapes and they merge.</p>
       </div>
-
       <div>
-        <p class="code-label">// the module contract — every logic file looks like this</p>
-        <pre class="code"><span class="cm">/* js/graphics.js — sprite packs and image rendering */</span>
-<span class="st">"use strict"</span>;
-(<span class="kw">function</span> () {
-  <span class="kw">const</span> G = window.Game;
-
-  <span class="cm">/* the whole game draws its art through this one call */</span>
-  G.<span class="fn">sprite</span> = <span class="kw">function</span> (key, fallback) {
-    <span class="kw">const</span> s = G.SPRITES[key];
-    <span class="kw">return</span> s &amp;&amp; s.src ? img(s) : fallback;  <span class="cm">// emoji if no pack</span>
-  };
-
-  G.<span class="fn">registerGraphicsPack</span> = <span class="kw">function</span> (pack) {
-    G.GRAPHICS_PACKS[pack.id] = pack;      <span class="cm">// a mod calls this</span>
-  };
-})();</pre>
-        <p style="color:var(--muted);font-size:.88rem;margin-top:12px">A graphics pack is just a mod that registers sprites for the engine's sprite keys — <code class="mono">enemy.&lt;id&gt;</code>, <code class="mono">class.&lt;id&gt;</code>, <code class="mono">item.&lt;id&gt;</code>, <code class="mono">loc.&lt;id&gt;</code> and so on.</p>
+        <h3>Small enough to read end to end</h3>
+        <p>447 functions, no duplicate definitions, no parse failures — checked by
+        <code>tools/static-audit.py</code> on every run rather than asserted in prose.</p>
+      </div>
+      <div>
+        <h3>Offline by construction</h3>
+        <p>A service worker and a manifest, so the game installs to a phone and keeps working with
+        the network off. Nothing on this page loads from another origin either.</p>
       </div>
     </div>
+  </section>
 
-    <h3 style="margin:30px 0 16px;font-size:1.05rem">Quickstart</h3>
-    <div class="split">
-      <div>
-        <ol class="steps">
-          <li>
-            <h3>Clone and serve</h3>
-            <p>No install step. Any static host works — a tiny local server is enough to get the service worker and PWA install.</p>
-            <pre class="code" style="margin-top:9px"><span class="cm"># extract/clone the whole folder first</span>
+  <section id="order">
+    <h2>How it loads</h2>
+    <p style="margin:0 0 18px;color:var(--muted);max-width:64ch">Script order <em>is</em> the
+    dependency graph. That is the whole architecture, and it is why the folder can be dropped on any
+    static host:</p>
+    <ol class="order">
+      <li><b>js/core.js</b>the loop, the state</li>
+      <li><b>js/data/</b>pure tables</li>
+      <li><b>js/systems/</b>combat, saves</li>
+      <li><b>js/ui/</b>panels, input</li>
+      <li><b>js/main.js</b>starts it</li>
+    </ol>
+  </section>
+
+  <section id="refuses">
+    <h2>What it refuses to do</h2>
+    <ul class="refuses">
+      <li><b>No bundler.</b> Nothing to install before you can read the code.</li>
+      <li><b>No framework.</b> The DOM is driven directly, not through a virtual one.</li>
+      <li><b>No transpiler.</b> ES5-ish on purpose, so it runs where it is opened.</li>
+      <li><b>No network at runtime.</b> No CDN, no telemetry, no account.</li>
+      <li><b>No duplicate definitions.</b> Audited, not promised.</li>
+      <li><b>No mac build.</b> Windows, Linux and Android — that is the list.</li>
+    </ul>
+  </section>
+
+  <section id="run">
+    <h2>Run it</h2>
+    <pre><span class="c"># nothing to install — the engine is plain files</span>
 git clone https://github.com/drsamonline/aethelgard-rpg-engine.git
-cd Aethelgard-Engine
+cd aethelgard-rpg-engine
 python3 -m http.server 8080
-<span class="cm"># → http://localhost:8080</span></pre>
-          </li>
-          <li>
-            <h3>Run the checks</h3>
-            <p>Plain Node and Python — there is nothing to install. CI runs the syntax check, JSON validation and the three suites on every push.</p>
-            <pre class="code" style="margin-top:9px">node --check js/core.js
-node test6.js &amp;&amp; node test7.js &amp;&amp; node test8.js
-node tools/verify.js        <span class="cm"># end-to-end</span>
-node tools/sims.js 1 12     <span class="cm"># 12 simulations</span>
-node js/validate.js         <span class="cm"># content validator</span>
-python3 tools/static-audit.py .</pre>
-          </li>
-          <li>
-            <h3>Extend it</h3>
-            <p>Add content to <code class="mono">js/data/</code>, or drop a mod into <code class="mono">mods/</code> and change nothing in the core.</p>
-            <pre class="code" style="margin-top:9px">window.AETHELGARD_MODS =
-  window.AETHELGARD_MODS || [];
+<span class="c"># open http://localhost:8080 — that's the whole build</span>
 
-window.AETHELGARD_MODS.push({
-  id: <span class="st">"my-mod"</span>, name: <span class="st">"My Mod"</span>,
-  version: <span class="st">"1.0.0"</span>, author: <span class="st">"You"</span>,
-  impact: <span class="st">"additive"</span>   <span class="cm">// additive | story | overhaul</span>
-});</pre>
-          </li>
-        </ol>
+<span class="c"># every module is checked and exercised with plain Node</span>
+node --check js/core.js
+node tools/verify.js      <span class="c"># PASS — tabs, actions, combat, save, both campaigns</span>
+python3 tools/static-audit.py .   <span class="c"># 447 functions · 0 duplicates · 0 parse failures</span></pre>
+  </section>
+
+  <section class="support" id="support">
+    <h2>Support the work</h2>
+    <div class="support-in">
+      <div>
+        <img class="portrait" src="assets/support-portrait.jpg" alt="Dr Sohil Momin">
+        <img class="qr" src="assets/upi-qr.svg" alt="UPI payment QR — open amount" style="margin-top:12px">
       </div>
-
-      <div class="panel">
-        <div class="panel-bar"><span class="sq"></span><span class="fname">docs/ARCHITECTURE.md</span><span class="spacer"></span><span>the rules</span></div>
-        <div style="padding:18px 20px">
-          <ul style="margin:0;padding-left:18px;color:var(--muted);font-size:.92rem;line-height:1.75">
-            <li><b style="color:var(--text-strong)">One global.</b> Public functions live on <code class="mono">window.Game</code> (aliased <code class="mono">G</code>). Nothing is imported.</li>
-            <li><b style="color:var(--text-strong)">Script order is the dependency graph.</b> <code class="mono">boot.js</code> runs last.</li>
-            <li><b style="color:var(--text-strong)">No virtual DOM.</b> A view returns an HTML string; <code class="mono">render()</code> assigns it to <code class="mono">#view-container</code>.</li>
-            <li><b style="color:var(--text-strong)">Split the render.</b> <code class="mono">updateStatus()</code> is cheap and updates numbers; <code class="mono">renderView()</code> rebuilds the panel. The 3-second tick only rebuilds tabs in <code class="mono">G.LIVE_TABS</code>.</li>
-            <li><b style="color:var(--text-strong)">Synchronous storage.</b> <code class="mono">G.store</code> wraps <code class="mono">localStorage</code> with an in-memory cache, so a save is durable the instant it is written — a save is about 13&nbsp;KB.</li>
-            <li><b style="color:var(--text-strong)">Mode-namespaced saves.</b> Slot keys carry the game mode (<code class="mono">aethelgard_v7_slot1</code> vs <code class="mono">aethelgard_v7_villain_slot1</code>), so two games never overwrite each other.</li>
-          </ul>
+      <div>
+        <h3>Free to use, and it stays free</h3>
+        <p>This is one person's work: no company, no ads, no tracking, no paid tier. If it saved you
+        an afternoon, a small contribution keeps the next one coming — any amount, or none at all.</p>
+        <div class="handles">
+          <span class="vpa">UPI · sohilmomin@upi</span>
+          <a href="https://ko-fi.com/drsamonline" rel="noopener noreferrer">Ko-fi</a>
+          <a href="https://www.paypal.com/paypalme/drsamonline?locale.x=en_GB&amp;country.x=IN" rel="noopener noreferrer">PayPal</a>
+          <a href="https://www.amazon.in/stores/author/B0D7XQ4Y8L" rel="noopener noreferrer">Books</a>
+          <a href="https://drsamonline.github.io/" rel="noopener noreferrer">All projects</a>
+          <a href="mailto:sohilmomin2000@gmail.com">Email</a>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ================= SUBSYSTEMS ================= -->
-<section id="subsystems" aria-labelledby="sub-h">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">The four subsystems</p>
-      <h2 class="sec" id="sub-h">Renderer · Input · Audio · Scene graph</h2>
-      <p class="lead">The engine's runtime concerns live in their own files, wired together only through <code class="mono">G</code>. Each one is small enough to hold in your head.</p>
-    </div>
-
-    <div class="subs">
-      <article class="sub panel reveal">
-        <div class="diagram" role="img" aria-label="Diagram: a view returns an HTML string, render assigns it to the view container, and a tick rebuilds only live tabs">
-          <svg viewBox="0 0 460 170" fill="none" stroke="#60a5fa" stroke-width="1.4">
-            <rect x="6" y="58" width="104" height="54" stroke="#2b3039"/>
-            <text x="58" y="82" fill="#c9d1d9" font-family="monospace" font-size="11" text-anchor="middle" stroke="none">view()</text>
-            <text x="58" y="98" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">returns HTML</text>
-            <path d="M110 85h44" marker-end="url(#a1)"/>
-            <rect x="154" y="58" width="120" height="54" stroke="#60a5fa"/>
-            <text x="214" y="82" fill="#eef2f7" font-family="monospace" font-size="11" text-anchor="middle" stroke="none">render()</text>
-            <text x="214" y="98" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">assign string</text>
-            <path d="M274 85h44" marker-end="url(#a1)"/>
-            <rect x="318" y="58" width="136" height="54" stroke="#2b3039"/>
-            <text x="386" y="82" fill="#c9d1d9" font-family="monospace" font-size="10" text-anchor="middle" stroke="none">#view-container</text>
-            <text x="386" y="98" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">the panel rebuilds</text>
-            <path d="M386 112v20H58v-20" stroke="#3b82f6" stroke-dasharray="4 3" marker-end="url(#a2)"/>
-            <text x="222" y="146" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">3s tick → renderView() for G.LIVE_TABS only</text>
-            <defs>
-              <marker id="a1" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0 0l6 3-6 3z" fill="#60a5fa" stroke="none"/></marker>
-              <marker id="a2" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0 0l6 3-6 3z" fill="#3b82f6" stroke="none"/></marker>
-            </defs>
-          </svg>
-        </div>
-        <div class="body">
-          <h3>Renderer</h3>
-          <p><span class="file">js/ui.js · js/views/*.js · js/graphics.js</span><br>Each view returns an HTML string. <code class="mono">render()</code> writes it into <code class="mono">#view-container</code>; expensive lists (the wiki) are paged rather than drawn whole, and only live tabs rebuild on the tick.</p>
-        </div>
-      </article>
-
-      <article class="sub panel reveal d1">
-        <div class="diagram" role="img" aria-label="Diagram: keyboard, pointer and focus-trap inputs all dispatch to Game actions">
-          <svg viewBox="0 0 460 170" fill="none" stroke="#60a5fa" stroke-width="1.4">
-            <rect x="6" y="16" width="130" height="34" stroke="#2b3039"/>
-            <text x="71" y="37" fill="#c9d1d9" font-family="monospace" font-size="10" text-anchor="middle" stroke="none">Esc / 1–9 keys</text>
-            <rect x="6" y="68" width="130" height="34" stroke="#2b3039"/>
-            <text x="71" y="89" fill="#c9d1d9" font-family="monospace" font-size="10" text-anchor="middle" stroke="none">click / tap</text>
-            <rect x="6" y="120" width="130" height="34" stroke="#2b3039"/>
-            <text x="71" y="141" fill="#c9d1d9" font-family="monospace" font-size="10" text-anchor="middle" stroke="none">Tab focus trap</text>
-            <path d="M136 33h40v52" marker-end="url(#a1)"/>
-            <path d="M136 85h40" marker-end="url(#a1)"/>
-            <path d="M136 137h40v-52" marker-end="url(#a1)"/>
-            <rect x="182" y="58" width="120" height="54" stroke="#60a5fa"/>
-            <text x="242" y="82" fill="#eef2f7" font-family="monospace" font-size="11" text-anchor="middle" stroke="none">G.actions</text>
-            <text x="242" y="98" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">shell + modals</text>
-            <path d="M302 85h44" marker-end="url(#a1)"/>
-            <rect x="346" y="58" width="108" height="54" stroke="#2b3039"/>
-            <text x="400" y="82" fill="#c9d1d9" font-family="monospace" font-size="10" text-anchor="middle" stroke="none">state change</text>
-            <text x="400" y="98" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">→ render()</text>
-          </svg>
-        </div>
-        <div class="body">
-          <h3>Input &amp; shell</h3>
-          <p><span class="file">js/ui.js · js/core.js</span><br>The shell owns tabs, the status bar, modals, settings and the mod panel. Keyboard shortcuts work throughout — <code class="mono">Esc</code> closes any overlay, <code class="mono">1–9</code> switch tabs — and overlays trap <code class="mono">Tab</code> focus.</p>
-        </div>
-      </article>
-
-      <article class="sub panel reveal">
-        <div class="diagram" role="img" aria-label="Diagram: an oscillator feeds a gain node under the music volume setting, then the destination">
-          <svg viewBox="0 0 460 170" fill="none" stroke="#60a5fa" stroke-width="1.4">
-            <path d="M6 60h30l6-26 6 52 6-52 6 52 6-52 6 52 6-52 6 52 6-52 6 52 6-52 6 52 6-52 6 52 6-26h30" stroke="#3b82f6"/>
-            <text x="86" y="110" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">improvise a scale</text>
-            <rect x="188" y="34" width="88" height="52" stroke="#60a5fa"/>
-            <text x="232" y="56" fill="#eef2f7" font-family="monospace" font-size="10" text-anchor="middle" stroke="none">oscillator</text>
-            <text x="232" y="72" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">Music.mood</text>
-            <path d="M276 60h34" marker-end="url(#a1)"/>
-            <rect x="314" y="34" width="60" height="52" stroke="#2b3039"/>
-            <text x="344" y="56" fill="#c9d1d9" font-family="monospace" font-size="10" text-anchor="middle" stroke="none">gain</text>
-            <text x="344" y="72" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">volume</text>
-            <path d="M374 60h34" marker-end="url(#a1)"/>
-            <text x="428" y="64" fill="#c9d1d9" font-family="monospace" font-size="10" text-anchor="middle" stroke="none">dst</text>
-            <text x="230" y="126" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">music sits under effects · follows the Music switch</text>
-          </svg>
-        </div>
-        <div class="body">
-          <h3>Audio</h3>
-          <p><span class="file">js/music.js · js/core.js</span><br>Zero audio files. The soundtrack is improvised live from a scale via the Web Audio API, scaled down under the effects and gated by the Music switch and volume slider. Volume is clamped so no stored value can break a parameter.</p>
-        </div>
-      </article>
-
-      <article class="sub panel reveal d3">
-        <div class="diagram" role="img" aria-label="Diagram: nodes positioned from WORLD_POS joined by links from WORLD_LINKS, with a local region map">
-          <svg viewBox="0 0 460 170" fill="none" stroke="#60a5fa" stroke-width="1.4">
-            <line x1="70" y1="50" x2="210" y2="34" stroke="#3b82f6" stroke-dasharray="3 3"/>
-            <line x1="210" y1="34" x2="360" y2="66" stroke="#3b82f6" stroke-dasharray="3 3"/>
-            <line x1="70" y1="50" x2="150" y2="120" stroke="#3b82f6" stroke-dasharray="3 3"/>
-            <line x1="150" y1="120" x2="360" y2="66" stroke="#3b82f6" stroke-dasharray="3 3"/>
-            <line x1="210" y1="34" x2="150" y2="120" stroke="#3b82f6" stroke-dasharray="3 3"/>
-            <rect x="56" y="38" width="28" height="24" stroke="#60a5fa"/><text x="70" y="54" fill="#eef2f7" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">loc</text>
-            <rect x="196" y="22" width="28" height="24" stroke="#60a5fa"/><text x="210" y="38" fill="#eef2f7" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">loc</text>
-            <rect x="346" y="54" width="28" height="24" stroke="#2b3039"/><text x="360" y="70" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">loc</text>
-            <rect x="136" y="108" width="28" height="24" stroke="#2b3039"/><text x="150" y="124" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">loc</text>
-            <text x="70" y="150" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">WORLD_POS nodes · WORLD_LINKS edges</text>
-            <text x="330" y="150" fill="#8b949e" font-family="monospace" font-size="9" text-anchor="middle" stroke="none">+ per-region local maps</text>
-          </svg>
-        </div>
-        <div class="body">
-          <h3>Scene graph</h3>
-          <p><span class="file">js/maps.js · js/world.js</span><br>The world map and each region's local map are drawn from data: nodes come from <code class="mono">G.WORLD_POS</code> and edges from <code class="mono">G.WORLD_LINKS</code>. A mod can add a region; if it has no map position it is skipped rather than crashing the render.</p>
-        </div>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ================= DEMO ================= -->
-<section id="demo" aria-labelledby="demo-h">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">See it running</p>
-      <h2 class="sec" id="demo-h">What the engine renders</h2>
-      <p class="lead">The shipped game is the engine's reference build — a world map, turn-based combat with several enemies, and an in-game diagnostics panel you can open from Settings.</p>
-    </div>
-
-    <div class="shots">
-      <figure class="shot reveal" style="margin:0">
-        <img src="assets/shot-title.jpg" alt="Aethelgard title screen with save slots" loading="lazy">
-        <figcaption class="cap">title / save slots</figcaption>
-      </figure>
-      <figure class="shot reveal d1" style="margin:0">
-        <img src="assets/shot-atlas.jpg" alt="The Aethelgard world map with clickable region nodes" loading="lazy">
-        <figcaption class="cap">world map (scene graph)</figcaption>
-      </figure>
-      <figure class="shot reveal d2" style="margin:0">
-        <img src="assets/shot-combat.jpg" alt="Turn-based combat against several enemies" loading="lazy">
-        <figcaption class="cap">combat (renderer)</figcaption>
-      </figure>
-      <figure class="shot reveal d3" style="margin:0">
-        <img src="assets/shot-diagnostics.jpg" alt="The in-game diagnostics report panel" loading="lazy">
-        <figcaption class="cap">diagnostics (devtools)</figcaption>
-      </figure>
-    </div>
-
-    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:24px">
-      <a class="btn primary" href="play/">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
-        Play the demo (this site)
-      </a>
-      <a class="btn" href="https://drsamonline.github.io/aethelgard-games/play/chronicles/">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 5h5v5M19 5l-9 9M10 5H5v14h14v-5"/></svg>
-        Live build — Chronicles of Fate
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ================= GET STARTED ================= -->
-<section id="start" aria-labelledby="start-h">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">Get started</p>
-      <h2 class="sec" id="start-h">Three ways in</h2>
-      <p class="lead">Play it, run it locally, or read how it is built before you change a line.</p>
-    </div>
-    <div class="start-grid">
-      <div class="start-card">
-        <h3>01 · Play</h3>
-        <ul>
-          <li><a href="play/">Play the demo here</a> — the full game served from this site.</li>
-          <li><a href="https://drsamonline.github.io/aethelgard-games/play/chronicles/">Chronicles of Fate</a> on GitHub Pages.</li>
-          <li><a href="https://aethelgardplay.netlify.app/">Netlify mirror</a> of the same build.</li>
-        </ul>
-      </div>
-      <div class="start-card">
-        <h3>02 · Run &amp; test</h3>
-        <ul>
-          <li><a href="https://github.com/drsamonline/aethelgard-rpg-engine">Clone the repo</a> and serve the folder.</li>
-          <li><code class="mono">node tools/verify.js</code> for the end-to-end check.</li>
-          <li><code class="mono">python3 tools/static-audit.py .</code> for the static audit.</li>
-        </ul>
-      </div>
-      <div class="start-card">
-        <h3>03 · Read the source</h3>
-        <ul>
-          <li><a href="https://github.com/drsamonline/aethelgard-rpg-engine/blob/main/docs/ARCHITECTURE.md">Architecture</a> — layers, rendering, storage.</li>
-          <li><a href="https://github.com/drsamonline/aethelgard-rpg-engine/blob/main/docs/MODDING.md">Modding</a> — the mod format and compatibility.</li>
-          <li><a href="https://github.com/drsamonline/aethelgard-rpg-engine/blob/main/docs/SAVE-FORMAT.md">Save format</a> · <a href="https://github.com/drsamonline/aethelgard-rpg-engine/blob/main/docs/TROUBLESHOOTING.md">Troubleshooting</a> · <a href="https://github.com/drsamonline/aethelgard-rpg-engine/blob/main/docs/AUDIT.md">Audit</a>.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= FAQ ================= -->
-<section id="faq" aria-labelledby="faq-h">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="eyebrow">FAQ</p>
-      <h2 class="sec" id="faq-h">Questions engineers ask first</h2>
-    </div>
-    <div class="faq">
-      <details class="q" open>
-        <summary>Is there really no build step?</summary>
-        <div class="a">Correct. The engine is plain ES5-ish JavaScript, HTML and CSS with no dependencies and no bundler. Files are loaded as separate <code>&lt;script&gt;</code> tags and share one global, <code>window.Game</code>. There is deliberately no single-file bundle.</div>
-      </details>
-      <details class="q">
-        <summary>What do I need to run it?</summary>
-        <div class="a">Any modern browser. Opening <code>index.html</code> from an extracted folder works; serving the folder over <code>http://</code> (any static host, or <code>python3 -m http.server</code>) additionally enables the service worker, so it installs to a home screen and runs fully offline.</div>
-      </details>
-      <details class="q">
-        <summary>How do I add content or change behaviour?</summary>
-        <div class="a">Two routes. Edit the pure-data files under <code>js/data/</code> (enemies, classes, quests, items, wiki entries), or drop a <code>.js</code> file into <code>mods/</code> — the engine discovers it at boot. Content mods apply instantly; story and overhaul mods only load on a fresh start, so a running save is never reshaped underneath you.</div>
-      </details>
-      <details class="q">
-        <summary>Can I ship my own art?</summary>
-        <div class="a">Yes. A graphics pack is a mod that registers images for the engine's sprite keys. Everything is drawn through one function, <code>Game.sprite(key, fallback)</code>, so an overhaul is drop-in — and anything a pack does not cover keeps its emoji, so partial packs work.</div>
-      </details>
-      <details class="q">
-        <summary>How is it tested?</summary>
-        <div class="a">CI (<code>.github/workflows/ci.yml</code>) runs a syntax check on every JS file, JSON validation, and three Node test suites on every push and pull request, followed by the static audit. Locally there is also an end-to-end verifier, twelve gameplay simulations, and a content validator (also available in-game under Settings → Diagnostics).</div>
-      </details>
-      <details class="q">
-        <summary>What licence is it under?</summary>
-        <div class="a">The engine code is MIT. The bundled art is © reserved — see <a href="https://github.com/drsamonline/aethelgard-rpg-engine/blob/main/LICENSE-ASSETS.md">LICENSE-ASSETS.md</a>. Core art is emoji and inline SVG, so the engine itself carries no external asset dependency.</div>
-      </details>
-      <details class="q">
-        <summary>How does this relate to the other Aethelgard games?</summary>
-        <div class="a">Aethelgard is a small world of two games. This repository is the engine and the reference RPG, <b>Aethelgard: Chronicles of Fate</b>. The visual novel, <b>Aethelgard — The Books</b>, is built on a separate, equally small engine called Saga.</div>
-      </details>
-    </div>
-  </div>
-</section>
-</main>
-
-
-
-
-<footer>
-  <div class="wrap foot">
-    <div class="built">
-      <b>Aethelgard Engine</b> — a zero-build, dependency-free browser RPG engine.<br>
-      Built by <b>Dr.&nbsp;Sohil Momin</b> · code MIT · art © reserved.
-    </div>
-    <nav aria-label="Footer">
-      <a href="https://github.com/drsamonline/aethelgard-rpg-engine">Repository</a>
-      <a href="play/">Play the demo</a>
-      <a href="https://github.com/drsamonline/aethelgard-rpg-engine/blob/main/docs/ARCHITECTURE.md">Architecture</a>
+  <footer>
+    <div class="wrap">
+      <span><b>Aethelgard Engine</b> — built by <a href="https://drsamonline.github.io/">Dr Sohil Momin</a>. MIT code; the game content is its own licence.</span>
       <a href="https://github.com/drsamonline/aethelgard-rpg-engine/blob/main/README.md">README</a>
-      <a href="https://github.com/drsamonline/aethelgard-rpg-engine/blob/main/LICENSE">PolyForm Noncommercial licence</a>
-    </nav>
-  </div>
-<!-- support:block:start -->
-<style>
-  /* Scoped to .support. Uses the host page's variables when they exist. */
-  .support{--s-ink:var(--ink,#14110e);--s-paper:var(--paper,#f7f2e9);--s-card:var(--paper-2,#fffdf8);
-           --s-muted:var(--muted,#6b6157);--s-line:var(--line,#e2d8c8);--s-accent:var(--accent,#2f6f8f);
-           font-family:var(--sans,ui-sans-serif,-apple-system,"Segoe UI",sans-serif);
-           color:var(--s-ink);padding:2.6rem 0 1rem;border-top:1px solid var(--s-line)}
-  .support-head{display:flex;gap:1rem;align-items:flex-start;margin:0 0 1.4rem}
-  .support-portrait{width:72px;height:72px;flex:0 0 72px;border-radius:50%;object-fit:cover;
-                    border:1px solid var(--s-line);background:var(--s-card)}
-  .support h2{font-size:1.15rem;letter-spacing:.08em;text-transform:uppercase;margin:0 0 .5rem;color:var(--s-muted)}
-  .support .support-lede{margin:0;max-width:44rem;color:var(--s-muted);font-size:.95rem}
-  .support-grid{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));align-items:stretch}
-  .support-card{background:var(--s-card);border:1px solid var(--s-line);border-radius:.7rem;padding:.9rem 1rem;
-                display:flex;flex-direction:column;gap:.35rem}
-  .support-card h3{margin:0;font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--s-muted);font-weight:600}
-  .support-card p{margin:0;font-size:.92rem;line-height:1.5}
-  .support-card a{color:var(--s-accent);text-decoration:none;border-bottom:1px solid transparent;word-break:break-word}
-  .support-card a:hover,.support-card a:focus-visible{border-bottom-color:currentColor}
-  .support-id{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-  .support-id code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.95rem;
-                   background:transparent;border:1px dashed var(--s-line);border-radius:.35rem;padding:.15rem .45rem}
-  .support-copy{font:inherit;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;
-                background:transparent;color:var(--s-muted);border:1px solid var(--s-line);
-                border-radius:.35rem;padding:.2rem .5rem;cursor:pointer}
-  .support-copy:hover,.support-copy:focus-visible{color:var(--s-ink);border-color:var(--s-ink)}
-  .support-card.upi{grid-row:span 1}
-  .support-qr{display:flex;gap:.9rem;align-items:center;flex-wrap:wrap;margin-top:.2rem}
-  /* the white tile is load-bearing: a dark-mode QR does not scan */
-  .support-qr img{width:132px;height:132px;display:block;background:#fff;padding:.35rem;
-                  border:1px solid var(--s-line);border-radius:.4rem;image-rendering:pixelated}
-  .support-qr small{display:block;color:var(--s-muted);font-size:.8rem;max-width:11rem;line-height:1.4}
-  .support-foot{margin:1.2rem 0 0;font-size:.8rem;color:var(--s-muted)}
-  @media (prefers-reduced-motion:no-preference){.support-card{transition:border-color .15s ease}}
-  .support-card:target,.support-card:focus-within{border-color:var(--s-accent)}
-
-  /* ---------- light theme ----------
-     Added so the page reads on paper. It overrides the page's own variables and
-     nothing else — no markup, no layout, no type. */
-  :root, html {
-    color-scheme: light;
-    --bg: #f7f6f2;
-    --panel: #ffffff;
-    --line: #e2ddd2;
-    --text: #14161a;
-    --muted: #5c6470;
-    --accent: #4170ab;
-  }
-</style>
-
-<section class="support" id="support" aria-labelledby="support-h" data-support>
-  <div class="support-head">
-    <img class="support-portrait" src="assets/support-portrait.jpg" width="72" height="72"
-         alt="Dr. Sohil Momin" loading="lazy" decoding="async">
-    <div>
-      <h2 id="support-h">Support this work</h2>
-      <p class="support-lede">Everything here is free, offline and accountless. If it earned its keep,
-        there are a few ways to say so — pick whichever is easiest where you are.</p>
+      <a href="https://github.com/drsamonline/aethelgard-rpg-engine">GitHub</a>
+      <span class="stamp">preview · not published yet</span>
     </div>
-  </div>
-  <div class="support-grid">
-
-    <div class="support-card upi">
-      <h3>UPI · India</h3>
-      <div class="support-id">
-        <code id="upi-vpa">drsohilboi@ybl</code>
-        <button class="support-copy" type="button" data-copy="drsohilboi@ybl"
-                aria-label="Copy the UPI ID drsohilboi@ybl">Copy</button>
-      </div>
-      <p><a href="upi://pay?pa=drsohilboi%40ybl&amp;pn=Dr.%20Sohil%20Momin&amp;cu=INR">Open in a UPI app →</a></p>
-      <div class="support-qr">
-        <img src="assets/upi-qr.svg" width="132" height="132"
-             alt="QR code for the UPI ID drsohilboi@ybl, payee Dr. Sohil Momin">
-        <small>Scan with any UPI app. Payee: Dr. Sohil Momin.</small>
-      </div>
-    </div>
-
-    <div class="support-card">
-      <h3>Ko-fi</h3>
-      <p>One-off tip, no account needed.<br>
-        <a href="https://ko-fi.com/matneo" target="_blank" rel="noopener noreferrer">ko-fi.com/matneo →</a></p>
-    </div>
-
-    <div class="support-card">
-      <h3>PayPal</h3>
-      <p>For outside India, or a card instead of UPI.<br>
-        <a href="https://paypal.me/drsohilmomin?locale.x=en_GB&amp;country.x=IN"
-           target="_blank" rel="noopener noreferrer">paypal.me/drsohilmomin →</a></p>
-    </div>
-
-    <div class="support-card">
-      <h3>My books</h3>
-      <p>The Amazon author store — every title, one shelf.<br>
-        <a href="https://www.amazon.com/stores/author/B08ZT331LY/allbooks?ccs_id=aed72b9f-71d9-41dc-adee-e9368a317acc"
-           target="_blank" rel="noopener noreferrer">Amazon bookstore →</a></p>
-    </div>
-
-    <div class="support-card">
-      <h3>More apps</h3>
-      <p>The rest of the estate, all of it offline-first.<br>
-        <a href="https://drsamonline.github.io/" target="_blank" rel="noopener noreferrer">drsamonline.github.io →</a></p>
-    </div>
-
-    <div class="support-card">
-      <h3>Say hello</h3>
-      <p>Bugs, corrections, requests.<br>
-        <a href="mailto:sohilmomin2000@gmail.com">sohilmomin2000@gmail.com →</a></p>
-    </div>
-
-  </div>
-  <p class="support-foot">No accounts, no tracking, nothing on this page loads from the network.
-    A thank-you is a thank-you; nothing is gated behind it.</p>
-</section>
+  </footer>
+</div>
 
 <script>
-  /* Copy buttons degrade to "select the text yourself" — never a dead button. */
-  (function () {
-    document.querySelectorAll('.support [data-copy]').forEach(function (btn) {
-      if (btn.dataset.copyWired) return;
-      btn.dataset.copyWired = '1';
-      btn.addEventListener('click', function () {
-        var value = btn.getAttribute('data-copy');
-        var label = btn.textContent;
-        function done() {
-          btn.textContent = 'Copied';
-          setTimeout(function () { btn.textContent = label; }, 1500);
-        }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(value).then(done, function () {});
-          return;
-        }
-        var t = document.createElement('textarea');
-        t.value = value; t.setAttribute('readonly', ''); t.style.position = 'absolute';
-        t.style.left = '-9999px'; document.body.appendChild(t); t.select();
-        try { document.execCommand('copy'); done(); } catch (e) {}
-        t.remove();
-      });
-    });
-  })();
-</script>
-<!-- support:block:end -->
-</footer>
+(() => {
+  const root = document.documentElement;
+  const btn = document.getElementById('theme');
+  const label = document.getElementById('theme-label');
+  const KEY = 'aethelgard-landing-theme';
 
-<script>
-(function () {
-  "use strict";
-  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const paint = (mode) => {
+    const dark = mode === 'dark' ||
+      (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    label.textContent = dark ? 'Dark' : 'Light';
+  };
+  const stored = localStorage.getItem(KEY);
+  paint(stored || 'system');
+  if (!stored) root.removeAttribute('data-theme');
 
-  /* ---- reveal on scroll (skipped entirely under reduced motion) ---- */
-  var items = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
-  if (reduce || !("IntersectionObserver" in window)) {
-    items.forEach(function (el) { el.classList.add("in"); });
-  } else {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
-      });
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
-    items.forEach(function (el) { io.observe(el); });
-  }
-
-  /* ---- scroll-spy for the sticky nav ---- */
-  var links = Array.prototype.slice.call(document.querySelectorAll('nav.links a[href^="#"]'));
-  var targets = links.map(function (a) { return document.querySelector(a.getAttribute("href")); });
-  function spy() {
-    var y = window.scrollY + 120, best = -1;
-    targets.forEach(function (t, i) {
-      if (t && t.offsetTop <= y) { best = i; }
-    });
-    links.forEach(function (a, i) { a.classList.toggle("active", i === best); });
-  }
-  var ticking = false;
-  window.addEventListener("scroll", function () {
-    if (ticking) return;
-    ticking = true;
-    window.requestAnimationFrame(function () { spy(); ticking = false; });
-  }, { passive: true });
-  spy();
-
-  /* ---- open the FAQ entry nearest the URL hash, if any ---- */
-  if (location.hash) {
-    var t = document.querySelector(location.hash);
-    if (t) { var d = t.querySelector("details.q"); if (d) { d.open = true; } }
-  }
+  btn.addEventListener('click', () => {
+    const dark = root.getAttribute('data-theme') === 'dark';
+    const next = dark ? 'light' : 'dark';
+    localStorage.setItem(KEY, next);
+    paint(next);
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (!localStorage.getItem(KEY)) paint('system');
+  });
 })();
 </script>
 </body>

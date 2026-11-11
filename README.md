@@ -28,7 +28,9 @@ and then build your own RPG on top.
 > open source, and **not contained in this repository**. See [Licence](#licence).
 
 <!-- shot:start -->
-<img src="docs/assets/app-desktop.png" alt="The app on its main screen" width="100%">
+
+![Screenshot](docs/shot.png)
+
 <!-- shot:end -->
 
 ## ▶️ See it in action

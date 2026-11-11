@@ -29,7 +29,7 @@ just the mechanic.
   per file, everything hung off the `Game` object.
 - Run the tests before you open a PR:
   ```bash
-  node test6.js && node test7.js && node test8.js
+  node test8.js && node test9.js && node test10.js
   ```
 - If you change the UI, say which browsers you checked.
 

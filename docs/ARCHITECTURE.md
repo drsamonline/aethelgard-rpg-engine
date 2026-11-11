@@ -99,8 +99,8 @@ different content has to be loaded.
 
 ## Testing
 
-`test8.js` and `test9.js` are plain Node scripts with a tiny assert helper. No
-framework, no config, no browser.
+`test8.js`, `test9.js` and `test10.js` are plain Node scripts with a tiny assert
+helper. No framework, no config, no browser.
 
 - `test8.js` runs `tools/static-audit.py` and pins its counts, so the documented
   invocation cannot silently start reporting zeros.
@@ -108,3 +108,8 @@ framework, no config, no browser.
   `fetch` in a `vm` context), fires fetch events at it and asserts what
   `respondWith` was handed: docs (`.md`) go network-first and fall back to the
   cache offline, everything else stays cache-first, and the cache name is bumped.
+- `test10.js` loads `js/core.js` into a `vm` context with a minimal browser shim
+  (a `localStorage` that is a `Map`, stub elements) and pins the save import:
+  every shape that must be refused, that a refusal writes nothing, that a
+  refused import is visible on the title screen, and that whatever the importer
+  accepts, `loadSlot()` reads back.

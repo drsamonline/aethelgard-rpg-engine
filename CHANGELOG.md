@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+- **Fixed — import announced a success the next boot would refuse.** The loader
+  demanded a numeric `level` and an `attrs` object; the importer demanded only
+  that `level` was not null. So `{"level":"seven"}` was "imported", written over
+  a slot and reported as a success — and `loadSlot()` then refused it, over the
+  save the player had just given up. `G.saveProblems(state)` is now the single
+  definition of a loadable save; `validSave()`, `loadSlot()` and
+  `importSaveData()` all consult it, and the importer checks before it writes
+  and again after `migrate()`, so nothing unloadable can reach a slot.
+- **Fixed — a save from the other game imported as a success.** Chronicles and
+  The Crown's Shadow keep separate slots and the loader refuses the other game's
+  save by design, so the importer must refuse it too; it now names both games in
+  the message instead of writing a slot that cannot open.
+- **Fixed — a refused import on the title screen showed nothing at all.**
+  `notify()` returns early when there is no live `G.state`, which is exactly the
+  state the title screen is in, so an import failure was silent. A refusal now
+  falls back to a toast, and the reason is specific ("its level is not a
+  number") rather than "invalid".
+- **Added — `test10.js`**, 33 assertions: it loads the real `js/core.js` into a
+  `vm` context with a minimal browser shim and proves that whatever
+  `importSaveData()` accepts, `loadSlot()` reads back — plus twelve shapes that
+  must be refused, a refused import writing nothing, and the refusal being
+  visible with no live state. Mutation-checked: removing the shape guard turns
+  5 red, removing the mode guard 3, making the refusal notify-only 3.
+- **CI** — the test step ran a hard-coded list (`test6..test9`), so a new suite
+  would have been written and never run. It discovers `test*.js` now and fails
+  the job on the first red one.
+
 - **Fixed — CI was red, and the assertion was wrong, not the code.** `test8.js`
   demanded `<script>` wiring in `index.html`, which this engine-only repository
   does not ship (the page lives in `drsamonline/aethelgard-games`), so the suite

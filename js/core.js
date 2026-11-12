@@ -230,7 +230,50 @@ G.save = function () {
   if (!G.state) return;
   G.store.put(slotKey(G.state.slot || 1), JSON.stringify(G.state));
 };
-G.validSave = function (s) { return !!s && typeof s === "object" && typeof s.level === "number" && typeof s.attrs === "object" && s.attrs !== null; };
+/* What a loadable save IS — one definition, used by the loader AND by import.
+
+   The loader demanded a numeric `level` and an `attrs` object; import demanded
+   only that `level` was not null. So `{"level":"seven"}` was imported, written
+   over a slot and announced as a success, and then refused on the next boot by
+   the loader — over the save the player had just given up. A validator the
+   writer does not consult is not a validator.
+
+   Returns an ARRAY of plain reasons (empty = loadable), so a refusal can tell
+   the player what is actually wrong instead of "invalid". */
+G.saveProblems = function (s) {
+  const p = [];
+  if (s === null || typeof s !== "object" || Array.isArray(s)) { p.push("it is not a save object"); return p; }
+  if (typeof s.level !== "number" || !isFinite(s.level) || s.level < 1) p.push("its level is not a number");
+  if (typeof s.attrs !== "object" || s.attrs === null || Array.isArray(s.attrs)) p.push("its attributes are missing");
+  if (s.modeId !== undefined && typeof s.modeId !== "string") p.push("its game id is not a string");
+  return p;
+};
+G.validSave = function (s) { return G.saveProblems(s).length === 0; };
+
+/* A save belongs to one game (see SAVE-FORMAT.md: slot 1 in Chronicles and
+   slot 1 in The Crown's Shadow are different characters). loadSlot() refuses
+   the other game's save by design — so import must refuse it too, or it
+   announces a success the next boot will not honour. */
+G.saveModeConflict = function (s) {
+  const id = (s && s.modeId) || "chronicles";
+  if (id === G.activeModeId()) return null;
+  const from = (G.MODES[id] && G.MODES[id].name) || id;
+  const m = G.activeMode();
+  const to = (m && m.name) || G.activeModeId();
+  return "it is a " + from + " save, and " + to + " is the game you are playing";
+};
+
+/* A refusal has to be visible even on the title screen, where there is no live
+   G.state yet — notify() returns early in exactly that case, which is how an
+   import could fail with nothing on screen at all. */
+G.importRefused = function (why) {
+  const title = "Not a valid save";
+  const body = "Nothing was imported — " + why + ".";
+  if (G.state) G.notify("bad", title, body);
+  else if (G.toast) G.toast(title + " — " + body, "bad");
+  console.warn(title + ": " + body);
+  return null;
+};
 G.loadSlot = function (i) {
   try {
     const raw = G.store.get(slotKey(i));
@@ -688,7 +731,15 @@ G.parseSaveText = function (txt) {
 
 /* import into the first free slot, or overwrite slot 1 if they are all taken */
 G.importSaveData = function (obj, slot) {
+  // Refuse FIRST, before migrate() touches it and before anything is written:
+  // whatever this accepts, loadSlot() must be able to read back.
+  const problems = G.saveProblems(obj);
+  if (problems.length) return G.importRefused(problems[0]);
   const state = G.migrate(obj);
+  const after = G.saveProblems(state);          // migrate() fills holes; prove it did
+  if (after.length) return G.importRefused(after[0]);
+  const clash = G.saveModeConflict(state);
+  if (clash) return G.importRefused(clash);
   let target = slot;
   if (!target) {
     target = 1;

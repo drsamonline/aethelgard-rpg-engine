@@ -69,3 +69,10 @@ The game validates saves and skips a corrupt one rather than crashing, with a
 warning in the console. The most common cause of an unreadable save is a file
 from a much older version; exporting from the old build and importing into the
 new one is the reliable route.
+
+**Import is checked before anything is written.** A file is refused — and no
+slot is touched — when it is not a save object, when its `level` is not a
+number, when its `attributes` are missing, or when it belongs to the *other*
+game (Chronicles and The Crown's Shadow keep separate slots and cannot load
+each other's characters). The message names the reason. A file that imports
+cleanly will always load; that is what `test10.js` pins.

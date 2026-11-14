@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+- **Added — `test10.js`, the content validator finally runs on a push.** `js/validate.js`
+  shipped a real content validator whose header promised it could be run "via the
+  harness in tests", but there was no harness: `tools/verify.js` drives it through
+  Playwright, so it needed a browser, and CI only ran test6–test9. The check that
+  catches a dangling reference — an objective naming an enemy spawned nowhere — was
+  therefore never run. `test10.js` loads every `js/data/` file and `js/world.js`
+  (which is where `LOCAL_MAPS`, and so "spawned nowhere", actually lives) into a `vm`
+  context and runs the validator with no browser. It asserts the shipped sample world
+  is clean, then proves the gate is not vacuous: three deliberately broken worlds —
+  a spawn, a chapter objective, a recipe cost — must each produce an error.
+- **Fixed — a recipe costing an item that does not exist blanked the Forge.** The
+  validator never read `cost`, so an unknown ingredient passed content review. It was
+  not a cosmetic typo either: `viewForge` built its cost line with `G.ITEMS[k].emoji`,
+  so one bad key threw a `TypeError` inside the render loop and the whole Forge tab
+  rendered nothing, with the console as the only clue. The validator now checks every
+  ingredient in `GEAR`, `CONSUMABLE_RECIPES` and `BUILDINGS`, rejects a non-positive
+  amount and a gear slot outside the seven, and the cost line moved to
+  `G.recipeCostLine` in `js/world.js` — beside `recipes()`, where the tests can reach
+  it — rendering a `❓` placeholder for an unknown ingredient instead of throwing.
+- **CI** — `test10.js` is in the suite loop, so a dangling reference now fails the
+  push instead of surfacing as a silent no-spawn.
 - **Fixed — CI was red, and the assertion was wrong, not the code.** `test8.js`
   demanded `<script>` wiring in `index.html`, which this engine-only repository
   does not ship (the page lives in `drsamonline/aethelgard-games`), so the suite

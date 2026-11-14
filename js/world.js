@@ -212,6 +212,18 @@ G.recipes = function () {
   for (const k in G.GEAR) if (G.GEAR[k].cost) list.push({ key:k, kind:"gear", name:G.GEAR[k].name, emoji:G.GEAR[k].emoji, cost:G.GEAR[k].cost, tier:G.GEAR[k].tier, slot:G.GEAR[k].slot });
   return list;
 };
+/* One recipe's cost line, exactly as the Forge renders it. It lives here beside
+   `recipes()` rather than in the view so a bad ingredient key is a DATA problem
+   the content validator and the Node suites can reach: `viewForge` used to build
+   this line with `G.ITEMS[k].emoji`, so one unknown key threw a TypeError and the
+   whole Forge tab rendered nothing, with the console as the only clue. */
+G.recipeCostLine = function (r) {
+  const sprite = (typeof G.sprite === "function") ? G.sprite : ((k, e) => e);
+  return Object.keys((r && r.cost) || {}).map(k => {
+    const item = G.ITEMS[k];
+    return `${r.cost[k]} ${sprite("item." + k, (item && item.emoji) || "❓")}`;
+  }).join(" · ");
+};
 G.canCraft = function (key) { const p = G.state, r = G.recipes().find(x => x.key === key); if (!r) return false; for (const k in r.cost) if ((p.inv[k]||0) < r.cost[k]) return false; return true; };
 G.craftRarity = function () { const p = G.state; const bonus = Math.min(11, p.skills.craft*0.3 + (p.settlement.buildings.workshop||0)*1.5); const roll = Math.random()*100 - bonus; if (roll < 0.4) return "mythic"; if (roll < 1.4) return "legendary"; if (roll < 7) return "epic"; if (roll < 26) return "rare"; return "common"; };
 G.craftItem = function (key) {

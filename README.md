@@ -85,7 +85,7 @@ js/data/              THE SAMPLE WORLD  <- your game's data goes here
   ...                   companions, events, gems, music, reactions, wiki, i18n
 docs/                 the landing page + design notes
 tools/                build and simulation scripts
-test8.js, test9.js    the suites CI runs (static audit; service worker)
+test8.js, test9.js, test10.js   the suites CI runs (static audit; service worker; content validator)
 ```
 
 Everything under `js/data/` is a **generic sample** — replace it with your own

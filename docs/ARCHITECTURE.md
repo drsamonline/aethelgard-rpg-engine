@@ -99,8 +99,8 @@ different content has to be loaded.
 
 ## Testing
 
-`test8.js` and `test9.js` are plain Node scripts with a tiny assert helper. No
-framework, no config, no browser.
+`test8.js`, `test9.js` and `test10.js` are plain Node scripts with a tiny assert
+helper. No framework, no config, no browser.
 
 - `test8.js` runs `tools/static-audit.py` and pins its counts, so the documented
   invocation cannot silently start reporting zeros.
@@ -108,3 +108,10 @@ framework, no config, no browser.
   `fetch` in a `vm` context), fires fetch events at it and asserts what
   `respondWith` was handed: docs (`.md`) go network-first and fall back to the
   cache offline, everything else stays cache-first, and the cache name is bumped.
+- `test10.js` runs the engine's own content validator — `G.validateContent()` in
+  `js/validate.js` — headlessly, by loading every `js/data/` file plus
+  `js/world.js` into a `vm` context. It asserts the sample world has no errors,
+  then proves the gate is not vacuous: three deliberately broken copies of the
+  world (a spawn, a chapter objective, a recipe cost) must each be caught. It
+  also pins `G.recipeCostLine`, the seam the Forge renders its cost line through,
+  so an unknown ingredient shows a placeholder instead of throwing.

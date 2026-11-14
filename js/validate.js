@@ -111,6 +111,25 @@ G.validateContent = function () {
     });
   });
 
+  // ---- 9. every ingredient a recipe or a building asks for exists ----
+  // The gap this closes: costs were the one reference the validator never read.
+  // An unknown key is not a cosmetic typo — `viewForge` builds its cost line with
+  // `G.ITEMS[k].emoji`, so one bad key threw a TypeError and the Forge tab
+  // rendered nothing at all, with the console as the only clue.
+  const checkCost = (cost, where) => {
+    Object.keys(cost || {}).forEach(k => {
+      if (!itemIds.has(k)) E(where, `costs "${k}" which is not an item`);
+      else if (!(cost[k] > 0)) E(where, `costs "${k}" a non-positive amount (${cost[k]})`);
+    });
+  };
+  Object.keys(G.GEAR || {}).forEach(k => {
+    if (G.GEAR[k].cost) checkCost(G.GEAR[k].cost, `recipe ${k}`);
+    if (G.GEAR[k].slot && !(G.SLOTS || []).some(s => s[0] === G.GEAR[k].slot))
+      E(`gear ${k}`, `slot "${G.GEAR[k].slot}" is not one of the seven slots`);
+  });
+  Object.keys(G.CONSUMABLE_RECIPES || {}).forEach(k => checkCost(G.CONSUMABLE_RECIPES[k].cost, `consumable ${k}`));
+  Object.keys(G.BUILDINGS || {}).forEach(k => checkCost(G.BUILDINGS[k].cost, `building ${k}`));
+
   // ---- 8. mods that contribute nothing because of the mode ----
   ((G.MODS && G.MODS.discovered) || []).forEach(d => {
     if (d.obj && d.obj._skippedForMode) return;      // correctly skipped

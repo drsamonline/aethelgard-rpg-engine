@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+- **Fixed — the Shadow set promised +15% crime and delivered 0.** `G.setBonuses()`
+  copies every key a set declares into one object, and `G.crimeChance()` read
+  `flatBonus("crime")` (race and class) but never `setBonuses().crime`. So wearing the
+  Shadow Hood, the Swift Boots and the Twin Daggers — the set's own description says
+  "+15% crime" — changed the crime odds by exactly zero. It is read now, and the test
+  asserts the delta is 0.15 rather than that the key merely exists.
+- **Fixed — the Duelist set's three-piece tier could not be worn.** It declared three
+  pieces across two slots: the Folded Katana (weapon), and the Parrying Dagger *and*
+  the Buckler, both offhand. Only one offhand can be equipped, so no legal loadout
+  ever reached three pieces and the advertised +8 attack was unearnable. It is now the
+  pair that can actually be worn — katana + parrying dagger — with the advertised
+  numbers kept verbatim (`+5% crit · +8 attack`) at the two-piece tier. The Buckler is
+  unaffected as an ordinary offhand.
+- **Added — the validator's mirror check: an effect nothing reads.** Sections 1–9 of
+  `js/validate.js` catch a reference that *points at nothing* — a recipe costing an
+  item that does not exist. Neither of the two bugs above is that shape: the reference
+  was fine and the *consumer* was missing. The new sections read the other way round:
+  every gear set's `b2`/`b3` may only grant one of the eight keys something actually
+  reads (`atk`, `def`, `spell`, `crit`, `flee`, `hp`, `energy`, `crime`); a tier must be
+  reachable, counting **distinct slots** rather than listed pieces; a piece must be
+  gear, and no item may advance two sets; and every gem's `stat` must be one the totals
+  carry. Both shipped defects are now errors, and `test10.js` proves the gate is not
+  vacuous with five deliberately broken worlds.
+- **`test10.js` loads `js/core.js` as well**, because the question "is this bonus
+  worth anything?" has to call the totals the bonus feeds — `setBonuses`, `gemTotals`,
+  `flatBonus`. It is an IIFE that only defines functions at load time, so no DOM.
+  Suite: 27 assertions, up from 14.
 - **Added — `test10.js`, the content validator finally runs on a push.** `js/validate.js`
   shipped a real content validator whose header promised it could be run "via the
   harness in tests", but there was no harness: `tools/verify.js` drives it through

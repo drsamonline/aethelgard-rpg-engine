@@ -130,6 +130,70 @@ G.validateContent = function () {
   Object.keys(G.CONSUMABLE_RECIPES || {}).forEach(k => checkCost(G.CONSUMABLE_RECIPES[k].cost, `consumable ${k}`));
   Object.keys(G.BUILDINGS || {}).forEach(k => checkCost(G.BUILDINGS[k].cost, `building ${k}`));
 
+  // ---- 10. gear sets: a piece that is not gear, a tier no loadout can reach, a bonus nobody reads ----
+  // Sections 1-9 catch a reference that POINTS AT NOTHING. This one catches the
+  // opposite: an EFFECT NOTHING POINTS AT. Two of them shipped in this sample world.
+  //   * Shadow's three-piece tier grants `crime` and `crimeChance()` never read
+  //     `setBonuses()`, so three legendary pieces moved the odds by exactly zero.
+  //   * Duelist declared three pieces across two slots (two of them offhand) and
+  //     only one offhand can be worn, so its three-piece tier was unreachable.
+  // `setBonuses()` copies every key a set declares into one object and only these
+  // eight are ever read — by maxHp, maxEnergy, atkPower, defPower, spellPower,
+  // critChance, fleeChance and crimeChance respectively.
+  const SET_BONUS_KEYS = ["atk", "def", "spell", "crit", "flee", "hp", "energy", "crime"];
+  const pieceOwner = {};
+  Object.keys(G.GEAR_SETS || {}).forEach(sid => {
+    const set = G.GEAR_SETS[sid], where = `gear set ${sid}`;
+    const pieces = set.pieces || [];
+    if (!set.name) W(where, "has no name");
+    if (pieces.length < 2) E(where, `declares ${pieces.length} piece(s) — a set needs at least two to be worth wearing`);
+
+    // one item per slot, so the most pieces that can ever be worn is the number
+    // of DISTINCT slots the set names — not the number of pieces it lists
+    const slots = new Set();
+    pieces.forEach(p => {
+      if (!gearIds.has(p)) { E(where, `piece "${p}" is not a gear item — the set can never complete`); return; }
+      const slot = G.GEAR[p].slot;
+      if (!slot) E(where, `piece "${p}" has no slot, so it can never be equipped`);
+      else slots.add(slot);
+      if (pieceOwner[p]) E(where, `piece "${p}" is also in the "${pieceOwner[p]}" set — one item cannot advance two sets`);
+      else pieceOwner[p] = sid;
+    });
+
+    [["b2", 2], ["b3", 3]].forEach(pair => {
+      const tier = pair[0], need = pair[1], b = set[tier];
+      if (!b) return;
+      if (pieces.length < need) E(where, `${tier} needs ${need} pieces but the set only declares ${pieces.length}`);
+      else if (slots.size < need)
+        E(where, `${tier} needs ${need} pieces but the set's pieces span only ${slots.size} slot(s) ` +
+                 `(${[...slots].join(", ")}) — no loadout can wear ${need} at once`);
+      Object.keys(b).forEach(k => {
+        if (SET_BONUS_KEYS.indexOf(k) < 0)
+          E(where, `${tier} grants "${k}", which nothing in the engine reads — the player is promised a bonus that does nothing (accepted: ${SET_BONUS_KEYS.join(", ")})`);
+        else if (typeof b[k] !== "number" || !isFinite(b[k]))
+          E(where, `${tier} grants "${k}" a non-number (${b[k]})`);
+        else if (b[k] === 0) W(where, `${tier} grants "${k}" zero — the bonus does nothing`);
+      });
+    });
+  });
+
+  // ---- 11. socket gems: a stat the totals do not carry is a gem that does nothing ----
+  const GEM_STATS = ["fire", "ice", "poison", "crit", "spell", "def", "lifesteal"];
+  Object.keys(G.GEMS || {}).forEach(k => {
+    const gem = G.GEMS[k];
+    if (!gem.name) W(`gem ${k}`, "has no name");
+    if (GEM_STATS.indexOf(gem.stat) < 0)
+      E(`gem ${k}`, `stat "${gem.stat}" is not one the totals carry — socketing it changes nothing (accepted: ${GEM_STATS.join(", ")})`);
+    else if (typeof gem.val !== "number" || !isFinite(gem.val)) E(`gem ${k}`, `value is not a number (${gem.val})`);
+    else if (gem.val === 0) W(`gem ${k}`, "grants zero");
+  });
+  Object.keys(G.SOCKETS_BY_RARITY || {}).forEach(r => {
+    if (!(G.RARITIES || {})[r]) E(`sockets`, `rarity "${r}" has a socket count but is not a rarity`);
+  });
+  Object.keys(G.RARITIES || {}).forEach(r => {
+    if ((G.SOCKETS_BY_RARITY || {})[r] === undefined) W(`sockets`, `rarity "${r}" has no socket count, so its gear can never hold a gem`);
+  });
+
   // ---- 8. mods that contribute nothing because of the mode ----
   ((G.MODS && G.MODS.discovered) || []).forEach(d => {
     if (d.obj && d.obj._skippedForMode) return;      // correctly skipped

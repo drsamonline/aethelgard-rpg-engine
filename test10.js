@@ -53,6 +53,11 @@ function loadWorld(mutate) {
   for (const f of dataFiles) run(path.join('js', 'data', f));
   // 2. LOCAL_MAPS — where each enemy is actually reachable lives in world.js, not
   //    in js/data/, and the validator reads it to decide "spawned nowhere".
+  //    core.js comes with it: it carries the stat totals the set bonuses and the
+  //    gem sockets feed (`setBonuses`, `gemTotals`, `flatBonus`), so a check on
+  //    what those bonuses are WORTH has nothing to call without it. Both files
+  //    are IIFEs that only define functions at load time.
+  run('js/core.js');
   run('js/world.js');
   // 3. the validator itself
   run('js/validate.js');
@@ -132,6 +137,141 @@ for (const [what, mutate] of breakages) {
   catch (e) { broke = 'THREW: ' + e.message; }
   ok('an unknown ingredient renders a placeholder instead of throwing',
      typeof broke === 'string' && broke.indexOf('THREW') !== 0 && broke.indexOf('❓') >= 0, broke);
+}
+
+/* ---------- 5. gear sets: the promised bonus must be one the engine reads ----------
+   The class this pins is the mirror of section 3's: not a reference that points at
+   nothing, but an EFFECT NOTHING POINTS AT. Two shipped in this sample world.
+
+   * Shadow's three-piece tier grants `crime`. `setBonuses()` copied it into its
+     result object and `crimeChance()` never read it, so wearing the hood, the
+     boots and the twin daggers changed the crime odds by exactly zero while the
+     set's own description advertised "+15% crime".
+   * Duelist declared three pieces across two slots — the katana (weapon) and two
+     offhands — and only one offhand can be worn, so its three-piece tier could
+     not be reached by any legal loadout.
+
+   `setBonuses()` copies EVERY key a set declares and only eight are ever read:
+   atk (atkPower), def (defPower), spell (spellPower), crit (critChance),
+   flee (fleeChance), hp (maxHp), energy (maxEnergy), crime (crimeChance). */
+const SET_BONUS_KEYS = ['atk','def','spell','crit','flee','hp','energy','crime'];
+
+{
+  const { G } = loadWorld();
+  const sets = G.GEAR_SETS || {};
+  ok('the sample world ships gear sets', Object.keys(sets).length > 0,
+     Object.keys(sets).length + ' sets');
+
+  const unknownKeys = [];
+  for (const sid in sets) {
+    for (const tier of ['b2', 'b3']) {
+      const b = sets[sid][tier];
+      if (!b) continue;
+      for (const k in b) if (SET_BONUS_KEYS.indexOf(k) < 0) unknownKeys.push(`${sid}.${tier}.${k}`);
+    }
+  }
+  ok('every shipped set grants only bonuses the engine reads', unknownKeys.length === 0,
+     unknownKeys.length ? 'unread: ' + unknownKeys.join(', ') : SET_BONUS_KEYS.length + ' accepted keys');
+
+  const missingPieces = [];
+  const slotSpread = {};
+  for (const sid in sets) {
+    const slots = new Set();
+    (sets[sid].pieces || []).forEach(p => {
+      if (!G.GEAR[p]) { missingPieces.push(`${sid}:${p}`); return; }
+      slots.add(G.GEAR[p].slot);
+    });
+    slotSpread[sid] = slots.size;
+  }
+  ok('every set piece is a real gear item', missingPieces.length === 0,
+     missingPieces.length ? 'missing: ' + missingPieces.join(', ') : 'all resolve');
+
+  const unreachable = [];
+  for (const sid in sets) {
+    for (const [tier, need] of [['b2', 2], ['b3', 3]]) {
+      if (!sets[sid][tier]) continue;
+      if (slotSpread[sid] < need) unreachable.push(`${sid}.${tier} (${slotSpread[sid]} slot(s), needs ${need})`);
+    }
+  }
+  ok('every set tier is reachable by some legal loadout', unreachable.length === 0,
+     unreachable.length ? 'unreachable: ' + unreachable.join(', ') : 'all tiers wear-able');
+}
+
+/* ---------- 6. the two defects, behaviourally ----------
+   A structural check can be satisfied by a set that declares nothing. These call
+   the functions the player's numbers actually come from, so they fail if the fix
+   is reverted even while the data still looks right. */
+{
+  /* a minimal state: only the fields these two functions read. `race` resolves
+     through RACES (falling back to human) and `cls` is null, so `flatBonus`
+     contributes only the race's own crime bonus — the same 0 for every case. */
+  const mkState = (gear) => ({ race:'human', cls:null, gear, skills:{ stealth:0 },
+                               attrs:{ finesse:0, might:0 }, underworld:{ heat:0 } });
+
+  const bare = { weapon:{ key:'dagger', plus:0, rarity:'common', affix:[] },
+                 offhand:{ key:null, plus:0, rarity:'common', affix:[] },
+                 helmet:{ key:null, plus:0, rarity:'common', affix:[] },
+                 boots:{ key:null, plus:0, rarity:'common', affix:[] } };
+  const shadowed = { weapon:{ key:'twin_dagger', plus:0, rarity:'legendary', affix:[] },
+                     offhand:{ key:null, plus:0, rarity:'common', affix:[] },
+                     helmet:{ key:'hood', plus:0, rarity:'legendary', affix:[] },
+                     boots:{ key:'swift_boots', plus:0, rarity:'legendary', affix:[] } };
+
+  const { G } = loadWorld();
+  ok('G.crimeChance and G.setBonuses are functions',
+     typeof G.crimeChance === 'function' && typeof G.setBonuses === 'function');
+
+  G.state = mkState(bare);
+  const base = G.crimeChance();
+  G.state = mkState(shadowed);
+  const withSet = G.crimeChance();
+
+  ok('the Shadow set\'s +15% crime actually reaches crimeChance',
+     Math.abs((withSet - base) - 0.15) < 1e-9,
+     `bare ${base.toFixed(2)} -> three pieces ${withSet.toFixed(2)} (delta ${(withSet - base).toFixed(2)})`);
+
+  // and the Duelist pair is a pair that can be worn at once: two distinct slots
+  const duel = G.GEAR_SETS.duelist;
+  const duelSlots = new Set(duel.pieces.map(p => G.GEAR[p].slot));
+  ok('the Duelist set\'s pieces occupy distinct slots', duelSlots.size === duel.pieces.length,
+     duel.pieces.map(p => `${p}=${G.GEAR[p].slot}`).join(', '));
+
+  G.state = mkState({ weapon:{ key:'katana', plus:0, rarity:'common', affix:[] },
+                      offhand:{ key:'dagger2', plus:0, rarity:'common', affix:[] },
+                      helmet:{ key:null, plus:0, rarity:'common', affix:[] },
+                      boots:{ key:null, plus:0, rarity:'common', affix:[] } });
+  ok('wearing the Duelist pair grants its advertised +8 attack',
+     G.setBonuses().atk === 8, 'setBonuses().atk = ' + G.setBonuses().atk);
+}
+
+/* ---------- 7. the gate is not vacuous, and it catches the right thing ----------
+   Each breakage is one set in its own sandbox. A validator that always says
+   "clean" fails every one of these. */
+const setBreakages = [
+  ['a set grants a bonus nothing in the engine reads', G => {
+    G.GEAR_SETS.ironclad.b2 = { strength:6 };
+  }],
+  ['a set needs a piece that is not gear', G => {
+    G.GEAR_SETS.ironclad.pieces = ['iron_plate','no_such_helm','plated_boots'];
+  }],
+  ['a set tier needs more pieces than it has slots', G => {
+    G.GEAR_SETS.ironclad.pieces = ['iron_plate','iron_helm'];
+    G.GEAR_SETS.ironclad.b3 = { hp:60 };            // 3 pieces, 2 slots
+  }],
+  ['one item is claimed by two sets', G => {
+    G.GEAR_SETS.duelist.pieces = ['katana','iron_helm'];
+  }],
+  ['a gem grants a stat the totals do not carry', G => {
+    G.GEMS.ruby.stat = 'charisma';
+  }],
+];
+
+for (const [what, mutate] of setBreakages) {
+  const { G } = loadWorld(mutate);
+  let r;
+  try { r = G.validateContent(); } catch (e) { r = { errors: [], warnings: [], threw: e.message }; }
+  ok('the validator catches: ' + what, !r.threw && r.errors.length > 0,
+     r.threw ? 'threw: ' + r.threw : r.errors.length + ' error(s)');
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

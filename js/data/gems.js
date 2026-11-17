@@ -28,8 +28,14 @@ const GEAR_SETS = {
               b2:{ spell:10 }, b3:{ energy:25 }, desc:"+10 spell · +25 max energy" },
   dragon:   { name:"Dragonscale",emoji:"🐲", pieces:["dragonscale","dragonfang","guardian_amulet"],
               b2:{ def:8 }, b3:{ atk:12, hp:50 }, desc:"+8 defence · +12 attack, +50 max HP" },
-  duelist:  { name:"Duelist",    emoji:"⚔️", pieces:["katana","dagger2","buckler"],
-              b2:{ crit:0.05 }, b3:{ atk:8 }, desc:"+5% crit · +8 attack" },
+  /* Duelist was declared with three pieces across TWO slots — the Folded Katana
+     (weapon), the Parrying Dagger and the Buckler (both offhand) — and only one
+     offhand can be worn, so the three-piece tier was unreachable by any legal
+     loadout: the +8 attack was advertised and could not be earned. The pair that
+     can actually be worn is the blade pair, and the advertised numbers are kept
+     verbatim at the two-piece tier. */
+  duelist:  { name:"Duelist",    emoji:"⚔️", pieces:["katana","dagger2"],
+              b2:{ crit:0.05, atk:8 }, desc:"+5% crit · +8 attack" },
 };
 
 Object.assign(window.Game, { GEMS, SOCKETS_BY_RARITY, GEM_COST, GEAR_SETS });

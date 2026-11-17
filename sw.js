@@ -9,7 +9,7 @@
    test9.js pins the list against the disk. Art packs, mod
    art, screenshots and posters are cached on demand the first time they are used,
    so a player who picks the Classic edition never downloads the illustrated art. */
-const CACHE = "aethelgard-v23";
+const CACHE = "aethelgard-v24";
 
 const CORE = [
   "./style.css",

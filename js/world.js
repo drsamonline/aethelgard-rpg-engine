@@ -289,7 +289,10 @@ G.assignWorker = function (key, delta) {
 };
 
 /* ---------- underworld ---------- */
-G.crimeChance = function () { const p = G.state; let c = 0.5 + p.skills.stealth*0.02 + p.attrs.finesse*0.01 - p.underworld.heat*0.003 + G.flatBonus("crime"); return G.clamp(c, 0.05, 0.95); };
+/* `setBonuses()` was the one source of `crime` this never read: the Shadow set
+   grants +15% crime at three pieces, its description says so, and wearing all
+   three changed the odds by exactly zero. It is read here now. */
+G.crimeChance = function () { const p = G.state; let c = 0.5 + p.skills.stealth*0.02 + p.attrs.finesse*0.01 - p.underworld.heat*0.003 + G.flatBonus("crime") + (G.setBonuses().crime||0); return G.clamp(c, 0.05, 0.95); };
 G.crimeResult = function (success, reward, heat, failHeat, label) {
   const p = G.state;
   if (success) { p.gold += reward; p.stats.goldEarned += reward; p.stats.crimes++; G.log(`🎭 ${label}: success! +${reward}g.`); G.notify("good", label+" succeeded", `+${reward}g`); G.Sound.play("coin"); p.underworld.heat = G.clamp(p.underworld.heat+heat,0,100); }

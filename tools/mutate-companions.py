@@ -2,7 +2,9 @@
 """Mutation check for the companion-behaviour guard: each edit must turn test10.js RED."""
 import pathlib, shutil, subprocess, sys, tempfile
 
-ROOT = pathlib.Path("/scratch/work/rpg")
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+if not (ROOT / "test10.js").exists():
+    sys.exit("mutate-companions.py: %s is not the repo root (no test10.js there)" % ROOT)
 
 MUTATIONS = [
     ("the resolver hides an unknown behaviour", "js/companions.js",

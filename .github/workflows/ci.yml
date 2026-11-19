@@ -51,5 +51,11 @@ jobs:
           done
           [ "$found" -eq 1 ] || echo "no node test suites present in this repo"
 
+      - name: Companion behaviour mutations (the guard is not blind)
+        # Each edit in tools/mutate-companions.py breaks the behaviour guard one
+        # way and test10.js must go red. A validator that passes on a world it
+        # cannot see is worse than none.
+        run: python3 tools/mutate-companions.py
+
       - name: Static audit (repo root)
         run: python3 tools/static-audit.py .

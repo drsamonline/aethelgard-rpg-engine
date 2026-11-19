@@ -194,6 +194,33 @@ G.validateContent = function () {
     if ((G.SOCKETS_BY_RARITY || {})[r] === undefined) W(`sockets`, `rarity "${r}" has no socket count, so its gear can never hold a gem`);
   });
 
+  // ---- 12. companions: a behaviour the engine implements ----
+  // Same shape as section 10, one level down. `G.companionTurn` dispatches on
+  // `def.behaviour` with an if-chain whose last branch is a plain strike, so any
+  // word it does not know — "Heal", "healer", "HEAL" — silently turns the
+  // companion into a worse Ranger: the perk line in the recruit panel still
+  // promises "Heals you when you fall below half health", and nothing heals.
+  //
+  // The list is duplicated here on purpose: this file must run in a harness that
+  // has not loaded js/companions.js. test10.js asserts the two lists are equal,
+  // which is the guard against them drifting apart.
+  const COMP_BEHAVIOURS = ["strike", "heal", "guard", "hex", "steal"];
+  const compIds = new Set();
+  (G.COMPANIONS || []).forEach((c, i) => {
+    const where = `companion ${(c && c.id) ? c.id : i}`;
+    if (!c) { E(where, "is empty"); return; }
+    if (!c.id) E(where, "has no id, so it can never be recruited or found by compDef");
+    else if (compIds.has(c.id)) E(where, `reuses the id "${c.id}" — compDef/compState find only the first, so one of them is unreachable`);
+    else compIds.add(c.id);
+    if (!c.name) W(where, "has no name to show in the recruit panel");
+    const b = c.behaviour;
+    if (b === undefined || b === null || b === "")
+      W(where, "declares no behaviour, so every round it takes a plain strike");
+    else if (COMP_BEHAVIOURS.indexOf(b) < 0)
+      E(where, `behaviour "${b}" is not one the engine implements — the companion silently falls back to a plain strike ` +
+               `while its perk still promises otherwise (accepted: ${COMP_BEHAVIOURS.join(", ")})`);
+  });
+
   // ---- 8. mods that contribute nothing because of the mode ----
   ((G.MODS && G.MODS.discovered) || []).forEach(d => {
     if (d.obj && d.obj._skippedForMode) return;      // correctly skipped

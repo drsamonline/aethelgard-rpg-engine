@@ -2,6 +2,38 @@
 
 ## Unreleased
 
+- **Fixed — a companion's `behaviour` was a free-text string combat matched by
+  equality, so a typo cost the companion its whole point in silence.**
+  `G.companionTurn` dispatches on `def.behaviour` with an if-chain whose last
+  branch is a plain strike, so `behaviour:"Heal"`, `"healer"` or `"HEAL"` healed
+  nobody, threw nothing and looked like a design choice — while the recruit panel
+  kept promising "Heals you when you fall below half health". The vocabulary now
+  lives in one place (`G.COMPANION_BEHAVIOURS`), `G.companionBehaviour(def)`
+  resolves it, and an unknown word is **named once per companion** in the combat
+  log instead of being swallowed. A missing behaviour is still a plain strike,
+  without a warning: that is a legitimate default, not a mistake.
+- **Added — the validator's third mirror check: companion behaviour (section 12).**
+  Every companion's `behaviour` must be one of `strike`, `heal`, `guard`, `hex`,
+  `steal`; a missing one is a warning, an unknown one is an error naming the word
+  and the accepted list. It also catches two companions sharing an id, which made
+  one of them unreachable through `compDef`/`compState`. The validator keeps its
+  own copy of the list because it must run in a harness that has not loaded
+  `js/companions.js`; `test10.js` asserts every engine behaviour validates clean,
+  which is what stops the two lists drifting apart.
+- **Added — `test10.js` section 8 drives the real `companionTurn`**, with the
+  combat helpers stubbed, so a fix that only adds a validator rule fails: a healer
+  heals below half and strikes above it, a guard raises `companionGuard`, a
+  mis-cased `Guard` does neither and says so once, and an unknown behaviour still
+  lands a strike. `companionIntercept` is pinned to `Math.random() = 0.3` inside
+  the vm sandbox, which distinguishes the guard's 0.45 from the ordinary 0.2.
+  45 assertions, up from 27.
+- **Added — `tools/mutate-companions.py`, wired into CI.** Six mutations, each
+  turning the suite red: the resolver hides an unknown behaviour, the warning
+  repeats every round, every behaviour buys the intercept odds, the healer stops
+  healing, the validator accepts any word, the validator stops checking ids.
+  (A seventh — dispatching on the raw field instead of the resolved one — is
+  deliberately absent: it is behaviourally identical, an equivalent mutant.)
+
 - **Fixed — the Shadow set promised +15% crime and delivered 0.** `G.setBonuses()`
   copies every key a set declares into one object, and `G.crimeChance()` read
   `flatBonus("crime")` (race and class) but never `setBonuses().crime`. So wearing the

@@ -59,12 +59,19 @@ function loadWorld(mutate) {
   //    are IIFEs that only define functions at load time.
   run('js/core.js');
   run('js/world.js');
-  // 3. the validator itself
+  // 3. the companions module — it defines the behaviour vocabulary the validator
+  //    checks against (G.COMPANION_BEHAVIOURS) and the resolver the dispatch uses,
+  //    and it is an IIFE that only defines functions at load time, so no state,
+  //    DOM or combat is needed to load it.
+  run('js/companions.js');
+  // 4. the validator itself
   run('js/validate.js');
 
   const G = ctx.window.Game;
   if (mutate) mutate(G);
-  return { G, dataFiles };
+  // `ctx` is the vm sandbox: the intercept test needs to pin Math.random, and the
+  // sandbox has its own Math realm, so it can only be stubbed from inside it.
+  return { G, dataFiles, ctx };
 }
 
 /* ---------- 1. the harness loaded something ---------- */
@@ -272,6 +279,157 @@ for (const [what, mutate] of setBreakages) {
   try { r = G.validateContent(); } catch (e) { r = { errors: [], warnings: [], threw: e.message }; }
   ok('the validator catches: ' + what, !r.threw && r.errors.length > 0,
      r.threw ? 'threw: ' + r.threw : r.errors.length + ' error(s)');
+}
+
+/* ---------- 8. companion behaviours: a word the engine does not know ----------
+   `G.companionTurn` dispatches on `def.behaviour` and its last branch is a plain
+   strike, so `behaviour:"Heal"` healed nobody, threw nothing and looked like a
+   design choice while the recruit panel kept promising "Heals you when you fall
+   below half health". These assertions call the real `companionTurn` with the
+   combat helpers stubbed, so a fix that only adds a validator rule fails them. */
+
+/* a one-companion fight: enough state for companionTurn and nothing more */
+function fight(behaviour, { hp = 40, maxHp = 100, enemyDef = 5, declared = true } = {}) {
+  const { G, ctx: fightCtx } = loadWorld();
+  const log = [];
+  const def = { id:'tester', name:'Tester', emoji:'✨', atk:1 };
+  if (declared) def.behaviour = behaviour;
+  G.COMPANIONS.push(def);
+  const state = {
+    hp,
+    gold: 0, stats: { goldEarned: 0 },
+    companions: [{ id:'tester', hp:50, maxHp:50, downed:false }],
+    activeCompanion: 'tester',
+    combat: { enemies: [{ name:'Wolf', hp:200, def:enemyDef, status:{}, alive:true }], companionGuard:false },
+  };
+  G.state = state;
+  G.maxHp = () => maxHp;
+  G.atkPower = () => 10;
+  G.spellPower = () => 0;
+  G.clog = (msg, cls) => log.push({ msg, cls });
+  G.floatText = () => {};
+  G.applyStatus = (status, key) => { status[key] = { turns:2, dmg:0 }; };
+  G.killEnemy = (e) => { e.alive = false; };
+  G.activeEnemies = () => state.combat.enemies.filter(e => e.alive);
+  return { G, state, log, ctx: fightCtx };
+}
+
+{
+  const { G } = loadWorld();
+  ok('G.companionBehaviour and G.COMPANION_BEHAVIOURS exist',
+     typeof G.companionBehaviour === 'function' && Array.isArray(G.COMPANION_BEHAVIOURS),
+     (G.COMPANION_BEHAVIOURS || []).join(', '));
+
+  const shipped = G.COMPANIONS || [];
+  const unresolved = shipped.filter(c => !G.companionBehaviour(c).known).map(c => `${c.id}:${c.behaviour}`);
+  ok('every shipped companion declares a behaviour the engine implements', unresolved.length === 0,
+     unresolved.length ? 'unknown: ' + unresolved.join(', ') : shipped.length + ' companions');
+
+  // the drift guard: the vocabulary the engine dispatches on is the vocabulary the
+  // validator accepts — every engine word validates clean, and a word outside it
+  // does not. (The validator keeps its own copy because it must run without this file.)
+  const rejected = G.COMPANION_BEHAVIOURS.filter(b => {
+    const { G: G2 } = loadWorld(G2x => { G2x.COMPANIONS.push({ id:'probe_' + b, name:'P', behaviour:b }); });
+    return G2.validateContent().errors.some(e => e.where.indexOf('probe_' + b) >= 0);
+  });
+  ok('the validator accepts every behaviour the engine implements', rejected.length === 0,
+     rejected.length ? 'refused: ' + rejected.join(', ') : G.COMPANION_BEHAVIOURS.length + ' behaviours');
+}
+
+/* a heal companion heals when you are below half, and strikes when you are not */
+{
+  const hurt = fight('heal', { hp: 40, maxHp: 100 });
+  hurt.G.companionTurn();
+  ok('a "heal" companion mends you below half health', hurt.state.hp === 58,
+     `hp 40 -> ${hurt.state.hp} (expected 58)`);
+  ok('the heal is logged as a heal', hurt.log.some(l => /mends/.test(l.msg)), hurt.log.map(l => l.msg).join(' | '));
+
+  const whole = fight('heal', { hp: 90, maxHp: 100 });
+  whole.G.companionTurn();
+  ok('a "heal" companion above half health strikes instead of wasting the turn',
+     whole.state.hp === 90 && whole.state.combat.enemies[0].hp < 200,
+     `hp ${whole.state.hp}, enemy ${whole.state.combat.enemies[0].hp}`);
+}
+
+/* a guard companion raises the guard flag; a typo does not get the guard's odds */
+{
+  const g = fight('guard');
+  g.G.companionTurn();
+  ok('a "guard" companion sets companionGuard', g.state.combat.companionGuard === true);
+
+  const typo = fight('Guard');
+  typo.G.companionTurn();
+  ok('a mis-cased "Guard" does not buy the guard behaviour', typo.state.combat.companionGuard === false);
+  ok('and it is named in the combat log', typo.log.some(l => /does not implement/.test(l.msg)),
+     typo.log.map(l => l.msg).join(' | '));
+
+  // once per companion, not once per round: a warning repeated every turn is noise
+  typo.G.companionTurn();
+  const warnings = typo.log.filter(l => /does not implement/.test(l.msg)).length;
+  ok('the warning is said once per companion, not every round', warnings === 1, warnings + ' warning(s)');
+}
+
+/* the intercept odds follow the RESOLVED behaviour: a typo must not buy 0.45 */
+{
+  const vm = require('vm');
+  // Math.random pinned to 0.3 from inside the sandbox: 0.3 >= 0.2 (an ordinary
+  // companion's chance, no intercept) but 0.3 < 0.45 (the guard's, intercepts).
+  const guard = fight('guard');
+  vm.runInContext('Math.random = () => 0.3;', guard.ctx);
+  const guarded = guard.G.companionIntercept(20);
+  ok('a "guard" companion intercepts a blow that an ordinary one would not',
+     guarded === true && guard.state.companions[0].hp < 50,
+     `intercepted=${guarded}, companion hp ${guard.state.companions[0].hp}`);
+
+  const typo = fight('Guard');
+  vm.runInContext('Math.random = () => 0.3;', typo.ctx);
+  const typoHit = typo.G.companionIntercept(20);
+  ok('a mis-cased "Guard" does not intercept at the guard\'s odds', typoHit === false,
+     'intercepted=' + typoHit);
+
+  const plain = fight('strike');
+  vm.runInContext('Math.random = () => 0.3;', plain.ctx);
+  ok('an ordinary companion leaves that blow to you', plain.G.companionIntercept(20) === false);
+}
+
+/* an unknown behaviour still fights — it must not do nothing at all */
+{
+  const t = fight('healer');
+  t.G.companionTurn();
+  ok('an unknown behaviour still lands a strike', t.state.combat.enemies[0].hp < 200,
+     'enemy hp ' + t.state.combat.enemies[0].hp);
+
+  const none = fight('strike', { declared: false });
+  none.G.companionTurn();
+  ok('a companion that declares no behaviour fights as a plain strike, without a warning',
+     none.state.combat.enemies[0].hp < 200 && !none.log.some(l => /does not implement/.test(l.msg)));
+}
+
+/* ---------- 9. the companion checks are not vacuous ---------- */
+const compBreakages = [
+  ['a companion declares a behaviour the engine does not implement', G => {
+    G.COMPANIONS[0].behaviour = 'Heal';
+  }],
+  ['two companions share an id', G => {
+    G.COMPANIONS[1].id = G.COMPANIONS[0].id;
+  }],
+];
+
+for (const [what, mutate] of compBreakages) {
+  const { G } = loadWorld(mutate);
+  let r;
+  try { r = G.validateContent(); } catch (e) { r = { errors: [], warnings: [], threw: e.message }; }
+  ok('the validator catches: ' + what, !r.threw && r.errors.length > 0,
+     r.threw ? 'threw: ' + r.threw : r.errors.map(e => e.msg).join(' | ') || '0 error(s)');
+}
+
+{
+  // a missing behaviour is a NOTE, not an error: strike is a legitimate default
+  const { G } = loadWorld(G2x => { delete G2x.COMPANIONS[0].behaviour; });
+  const r = G.validateContent();
+  ok('a companion with no behaviour is a warning, not an error',
+     r.errors.length === 0 && r.warnings.some(w => /behaviour/.test(w.msg)),
+     `${r.errors.length} error(s), ${r.warnings.length} warning(s)`);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

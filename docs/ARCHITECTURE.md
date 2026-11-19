@@ -110,8 +110,16 @@ helper. No framework, no config, no browser.
   cache offline, everything else stays cache-first, and the cache name is bumped.
 - `test10.js` runs the engine's own content validator — `G.validateContent()` in
   `js/validate.js` — headlessly, by loading every `js/data/` file plus
-  `js/world.js` into a `vm` context. It asserts the sample world has no errors,
-  then proves the gate is not vacuous: three deliberately broken copies of the
-  world (a spawn, a chapter objective, a recipe cost) must each be caught. It
-  also pins `G.recipeCostLine`, the seam the Forge renders its cost line through,
-  so an unknown ingredient shows a placeholder instead of throwing.
+  `js/core.js`, `js/world.js` and `js/companions.js` into a `vm` context. It
+  asserts the sample world has no errors, then proves the gate is not vacuous:
+  deliberately broken copies of the world (a spawn, a chapter objective, a recipe
+  cost, a gear set, a gem, a companion's behaviour, a duplicate companion id)
+  must each be caught. It also pins `G.recipeCostLine`, the seam the Forge
+  renders its cost line through, so an unknown ingredient shows a placeholder
+  instead of throwing, and it calls the real `G.companionTurn` /
+  `G.companionIntercept` with the combat helpers stubbed — a heal, a guard, a
+  mis-cased behaviour and a missing one — so a fix that only adds a validator
+  rule still fails.
+- `tools/mutate-companions.py` breaks the companion-behaviour guard six ways and
+  requires `test10.js` to go red on each. CI runs it after the suites: a check
+  that passes on a world it cannot see is worse than no check.
